@@ -1,0 +1,80 @@
+# Environment files with API keys
+.env
+.env.local
+.env.production
+
+# Database files
+*.db
+data/
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Personal files and assets
+attached_assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp3
+*.mp4
+*.wav
+
+# Deployment artifacts
+rss-reader-deployment/
+rss-reader-deployment.tar.gz
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+.tmp/
