@@ -166,7 +166,7 @@ st.sidebar.metric("RSS Feeds", feeds_count)
 st.sidebar.metric("Bookmarks", bookmarks_count)
 
 if feeds_count > 0:
-    if st.sidebar.button("🔄 Refresh All Feeds", use_container_width=True):
+    if st.sidebar.button("Refresh All Feeds", use_container_width=True):
         with st.spinner("Refreshing feeds..."):
             rss_manager.refresh_all_feeds()
         st.success("Feeds refreshed!")
@@ -276,10 +276,10 @@ if current_page == "articles":
                 st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
 
 elif current_page == "feeds":
-    st.markdown(f'<h1>{svg_icon_html("feeds", 32)} RSS Feed Management</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="md-headline">RSS Feed Management</h1>', unsafe_allow_html=True)
     
     # Add new feed section
-    with st.expander(f"{svg_icon_html('add', 16)} Add New RSS Feed", expanded=True):
+    with st.expander("Add New RSS Feed", expanded=True):
         col1, col2, col3 = st.columns([2, 2, 1])
         
         with col1:
@@ -301,7 +301,7 @@ elif current_page == "feeds":
                     st.error("Please provide both name and URL")
     
     # Display current feeds
-    st.markdown(f'<h3>{svg_icon_html("feeds", 24)} Current RSS Feeds</h3>', unsafe_allow_html=True)
+    st.markdown(f'<h3> Current RSS Feeds</h3>', unsafe_allow_html=True)
     
     feeds = rss_manager.get_feeds_detailed()
     
@@ -335,7 +335,7 @@ elif current_page == "feeds":
             st.divider()
 
 elif current_page == "bookmarks":
-    st.markdown(f'<h1>{svg_icon_html("bookmark", 32)} Bookmarked Articles</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1> Bookmarked Articles</h1>', unsafe_allow_html=True)
     
     bookmarks = bookmark_manager.get_bookmarks()
     
@@ -410,7 +410,7 @@ elif current_page == "bookmarks":
             st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
 
 elif current_page == "summary":
-    st.markdown(f'<h1>{svg_icon_html("summary", 32)} Combined Summary</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1> Combined Summary</h1>', unsafe_allow_html=True)
     
     bookmarks = bookmark_manager.get_bookmarks()
     
@@ -471,7 +471,7 @@ elif current_page == "summary":
         if st.session_state.combined_summary:
             st.success("Summary generated successfully!")
             
-            st.markdown(f'<h3>{svg_icon_html("summary", 24)} Generated Summary</h3>', unsafe_allow_html=True)
+            st.markdown(f'<h3> Generated Summary</h3>', unsafe_allow_html=True)
             
             # Text display with copy functionality
             st.text_area(
@@ -486,7 +486,7 @@ elif current_page == "summary":
             
             with col1:
                 st.download_button(
-                    label="📥 Download as Text",
+                    label="Download as Text",
                     data=st.session_state.combined_summary,
                     file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                     mime="text/plain",
@@ -498,7 +498,7 @@ elif current_page == "summary":
                     st.success("Use Ctrl+A and Ctrl+C in the text area above to copy!")
             
             # Audio generation section
-            st.markdown(f'<h3>{svg_icon_html("audio", 24)} Audio Options</h3>', unsafe_allow_html=True)
+            st.markdown(f'<h3> Audio Options</h3>', unsafe_allow_html=True)
             
             # Initialize audio generation state
             if 'audio_generating' not in st.session_state:
@@ -549,10 +549,10 @@ elif current_page == "summary":
                     st.error(f"Error preparing download: {str(e)}")
 
 elif current_page == "settings":
-    st.markdown(f'<h1>{svg_icon_html("settings", 32)} Settings</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1> Settings</h1>', unsafe_allow_html=True)
     
     # API Keys section
-    st.markdown(f'<h3>{svg_icon_html("key", 24)} API Keys</h3>', unsafe_allow_html=True)
+    st.markdown(f'<h3> API Keys</h3>', unsafe_allow_html=True)
     st.caption("These keys are stored securely and persist across sessions")
     
     with st.expander("Configure API Keys", expanded=True):
@@ -579,7 +579,7 @@ elif current_page == "settings":
                 st.error("Please enter a valid API key")
     
     # App Settings section
-    st.markdown(f'<h3>{svg_icon_html("settings", 24)} Application Settings</h3>', unsafe_allow_html=True)
+    st.markdown(f'<h3> Application Settings</h3>', unsafe_allow_html=True)
     
     with st.expander("🔊 Audio Settings", expanded=True):
         # Google TTS Voice selection - Neural2 and Studio voices
