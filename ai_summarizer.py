@@ -100,20 +100,32 @@ class AISummarizer:
             # Combine all summaries into one cohesive summary
             combined_prompt = """Create a comprehensive news summary by combining these individual article summaries:
 
-            FORMATTING REQUIREMENTS:
-            - Write 3-4 well-structured paragraphs with clear line breaks
-            - Group related topics together naturally
+            CRITICAL FORMATTING REQUIREMENTS:
+            - Each story/topic MUST be in its own separate paragraph
+            - Use double line breaks between different stories (press Enter twice)
+            - Start each new story on a fresh paragraph with clear separation
             - Use conversational, natural language for audio playback
             - NO bullet points, asterisks, or special formatting
             - NO source names or article titles
-            - Present as a flowing narrative about current events
-            - Make smooth transitions between different topics
+            - Group similar topics together, but keep each story in its own paragraph
+            - Make smooth transitions between paragraphs
 
             Individual summaries to combine:
             """
             
             for i, summary_data in enumerate(individual_summaries, 1):
-                combined_prompt += f"\n\nSummary {i}: {summary_data['summary']}"
+                combined_prompt += f"\n\nSTORY {i}: {summary_data['summary']}"
+            
+            combined_prompt += f"""
+            
+            FINAL INSTRUCTION: Write your response with each story as a separate paragraph. Put two line breaks between each story. Example format:
+
+            First story paragraph here about topic A.
+
+            Second story paragraph here about topic B.
+
+            Third story paragraph here about topic C.
+            """
             
             # Generate combined summary using Gemini only
             if self.gemini_client:
