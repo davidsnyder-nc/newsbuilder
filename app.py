@@ -335,9 +335,13 @@ elif current_page == "summary":
                                 st.session_state.audio_file = audio_file
                                 st.success("Audio generated!")
                             else:
-                                st.error("Failed to generate audio")
+                                st.error("Failed to generate audio - please check your OpenAI API key quota")
                         except Exception as e:
-                            st.error(f"Error generating audio: {str(e)}")
+                            error_msg = str(e)
+                            if "quota" in error_msg.lower() or "429" in error_msg:
+                                st.error("Your OpenAI API key has exceeded its quota. Please check your billing at https://platform.openai.com/account/billing")
+                            else:
+                                st.error(f"Error generating audio: {error_msg}")
             
             with col2:
                 if 'audio_file' in st.session_state and st.session_state.audio_file:
