@@ -354,7 +354,7 @@ elif current_page == "summary":
                         with open(st.session_state.audio_file, 'rb') as f:
                             audio_data = f.read()
                         st.download_button(
-                            label="📥 Download MP3",
+                            label=f"{svg_icon_html('download', 16)} Download MP3",
                             data=audio_data,
                             file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp3",
                             mime="audio/mp3",
@@ -364,10 +364,10 @@ elif current_page == "summary":
                         st.error(f"Error preparing download: {str(e)}")
 
 elif current_page == "settings":
-    st.title("⚙️ Settings")
+    st.markdown(f'<h1>{svg_icon_html("settings", 32)} Settings</h1>', unsafe_allow_html=True)
     
     # API Keys section
-    st.subheader("🔑 API Keys")
+    st.markdown(f'<h3>{svg_icon_html("key", 24)} API Keys</h3>', unsafe_allow_html=True)
     st.caption("These keys are stored securely and persist across sessions")
     
     with st.expander("Configure API Keys", expanded=True):
@@ -392,7 +392,7 @@ elif current_page == "settings":
             help="Get your API key from https://platform.openai.com"
         )
         
-        if st.button("💾 Save API Keys", type="primary"):
+        if st.button(f"{svg_icon_html('save', 16)} Save API Keys", type="primary"):
             if gemini_key and not gemini_key.startswith("*"):
                 db.save_setting("GEMINI_API_KEY", gemini_key)
                 os.environ["GEMINI_API_KEY"] = gemini_key
@@ -405,7 +405,7 @@ elif current_page == "settings":
             st.rerun()
     
     # App Settings section
-    st.subheader("🎛️ Application Settings")
+    st.markdown(f'<h3>{svg_icon_html("settings", 24)} Application Settings</h3>', unsafe_allow_html=True)
     
     with st.expander("AI Settings", expanded=True):
         # AI service selection
@@ -419,11 +419,11 @@ elif current_page == "settings":
             help="Choose between Gemini and OpenAI for article summarization"
         )
         
-        if st.button("💾 Save AI Settings"):
+        if st.button(f"{svg_icon_html('save', 16)} Save AI Settings"):
             db.save_setting("ai_service", selected_ai_service)
             st.success("AI service settings saved! Restart may be needed for changes to take effect.")
     
-    with st.expander("Audio Settings", expanded=True):
+    with st.expander(f"{svg_icon_html('audio', 16)} Audio Settings", expanded=True):
         # Voice selection for TTS
         voice_options = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
         current_voice = db.get_setting("tts_voice", "alloy")
@@ -443,7 +443,7 @@ elif current_page == "settings":
             step=0.1
         )
         
-        if st.button("💾 Save Audio Settings"):
+        if st.button(f"{svg_icon_html('save', 16)} Save Audio Settings"):
             db.save_setting("tts_voice", selected_voice)
             db.save_setting("speaking_rate", speaking_rate)
             st.success("Audio settings saved!")
