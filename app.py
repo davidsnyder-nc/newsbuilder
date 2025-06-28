@@ -7,43 +7,111 @@ from article_scraper import ArticleScraper
 from ai_summarizer import AISummarizer
 from audio_processor import AudioProcessor
 from database import DatabaseManager
-from svg_icons import get_svg_icon, svg_icon_html
+
 
 # Configure page
 st.set_page_config(
     page_title="RSS Reader with AI Summarization",
-    page_icon="📰",
+
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for compact layout
+# Material Design CSS
 st.markdown("""
 <style>
-    .stButton button {
-        height: 2rem;
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+    
+    .stApp {
+        font-family: 'Roboto', sans-serif;
+        background-color: #fafafa;
     }
     
-    .element-container {
-        margin-bottom: 0.5rem;
+    /* Material Design Cards */
+    .material-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 16px;
+        margin: 8px 0;
+        transition: box-shadow 0.2s ease;
     }
     
-    .stMarkdown p {
-        margin-bottom: 0.25rem;
+    .material-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
     
-    .stCaption {
-        margin-bottom: 0.25rem;
+    /* Material Design Typography */
+    .md-headline {
+        font-size: 24px;
+        font-weight: 400;
+        margin: 16px 0;
+        color: #212121;
     }
     
-    [data-testid="stImage"] {
-        margin-bottom: 0;
+    .md-title {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 12px 0 8px 0;
+        color: #212121;
     }
     
-    .streamlit-container {
-        padding-top: 1rem;
+    .md-subtitle {
+        font-size: 16px;
+        font-weight: 400;
+        color: #757575;
+        margin: 8px 0;
+    }
+    
+    .md-body {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #424242;
+    }
+    
+    .md-caption {
+        font-size: 12px;
+        font-weight: 400;
+        color: #757575;
+    }
+    
+    /* Material Design Buttons */
+    .stButton > button {
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-weight: 500;
+        text-transform: uppercase;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #1565c0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    }
+    
+    /* Clean interface - remove icons and extra spacing */
+    .stSelectbox > div > div {
+        border-radius: 4px;
+    }
+    
+    .stTextInput > div > div {
+        border-radius: 4px;
+    }
+    
+    /* Material spacing */
+    .mb-2 { margin-bottom: 16px; }
+    .mt-2 { margin-top: 16px; }
+    .p-2 { padding: 16px; }
+    
+    /* Clean sidebar */
+    .css-1d391kg {
+        background-color: white;
+        border-right: 1px solid #e0e0e0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -65,16 +133,16 @@ def get_managers():
 db, rss_manager, bookmark_manager, article_scraper, ai_summarizer, audio_processor = get_managers()
 
 # Navigation
-st.sidebar.markdown(f'<h1 style="margin: 0;">{svg_icon_html("rss", 24)} RSS Reader</h1>', unsafe_allow_html=True)
+st.sidebar.markdown('<h1 class="md-headline">RSS Reader</h1>', unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
 # Navigation menu
 pages = {
-    "📖 Read Articles": "articles",
-    "📊 RSS Feeds": "feeds", 
-    "🔖 Bookmarks": "bookmarks",
-    "📄 Summary": "summary",
-    "⚙️ Settings": "settings"
+    "Read Articles": "articles",
+    "RSS Feeds": "feeds", 
+    "Bookmarks": "bookmarks",
+    "Summary": "summary",
+    "Settings": "settings"
 }
 
 # Use query params for navigation
@@ -89,7 +157,7 @@ for page_name, page_key in pages.items():
 
 # Quick stats in sidebar
 st.sidebar.markdown("---")
-st.sidebar.markdown(f'<h3>{svg_icon_html("chart", 20)} Quick Stats</h3>', unsafe_allow_html=True)
+st.sidebar.markdown('<h3 class="md-title">Quick Stats</h3>', unsafe_allow_html=True)
 
 feeds_count = len(rss_manager.get_feeds())
 bookmarks_count = bookmark_manager.get_bookmark_count()
@@ -106,7 +174,7 @@ if feeds_count > 0:
 
 # Page content
 if current_page == "articles":
-    st.markdown(f'<h1>{svg_icon_html("articles", 32)} RSS Articles</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="md-headline">RSS Articles</h1>', unsafe_allow_html=True)
     
     feeds = rss_manager.get_feeds()
     
