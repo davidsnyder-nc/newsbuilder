@@ -2,68 +2,37 @@ import os
 import io
 import tempfile
 import requests
+import json
 from typing import Optional
 from pydub import AudioSegment
-
-try:
-    from google.cloud import texttospeech
-    GOOGLE_TTS_AVAILABLE = True
-except ImportError:
-    GOOGLE_TTS_AVAILABLE = False
-
 
 class AudioProcessor:
     def __init__(self, db_manager=None):
         from database import DatabaseManager
         self.db = db_manager or DatabaseManager()
         
-        # Initialize Google Cloud TTS only
-        self.google_tts_client = None
+        # Initialize Google Cloud TTS using REST API with API key
+        self.api_key = None
         self.tts_method = None
         
-        if GOOGLE_TTS_AVAILABLE:
-            try:
-                # Use Gemini API key for Google Cloud TTS authentication
-                gemini_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-                if gemini_key:
-                    # Set the API key as environment variable for Google Cloud
-                    os.environ["GOOGLE_API_KEY"] = gemini_key
-                    
-                    # Initialize Google Cloud TTS client
-                    self.google_tts_client = texttospeech.TextToSpeechClient()
-                    
-                    # Get voice settings from database
-                    voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-J")
-                    speaking_rate = self.db.get_setting("speaking_rate", 1.0)
-                    
-                    self.voice = texttospeech.VoiceSelectionParams(
-                        language_code="en-US",
-                        name=voice_name,
-                        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-                    )
-                    self.audio_config = texttospeech.AudioConfig(
-                        audio_encoding=texttospeech.AudioEncoding.MP3,
-                        speaking_rate=float(speaking_rate),
-                        pitch=0.0
-                    )
-                    self.tts_method = "google"
-                    print("Google Cloud TTS initialized using Gemini API key")
-                else:
-                    print("Gemini API key not found - cannot initialize Google TTS")
-            except Exception as e:
-                print(f"Google Cloud TTS initialization failed: {str(e)}")
+        # Get Gemini API key for Google Cloud TTS
+        gemini_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+        if gemini_key:
+            self.api_key = gemini_key
+            self.tts_method = "google"
+            print("Google Cloud TTS initialized using REST API with Gemini API key")
         else:
-            print("Google Cloud TTS library not available")
+            print("No Gemini API key found - cannot initialize Google TTS")
         
         if not self.tts_method:
             print("No TTS service available - please configure Gemini API key in Settings")
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """
-        Convert text to speech using Google Cloud TTS
+        Convert text to speech using Google Cloud TTS REST API
         Returns the path to the generated audio file
         """
-        if not self.tts_method or self.tts_method != "google":
+        if not self.tts_method or not self.api_key:
             print("Google Cloud TTS not available")
             return None
         
@@ -80,7 +49,7 @@ class AudioProcessor:
             return None
     
     def _google_text_to_speech(self, text: str, output_path: str) -> Optional[str]:
-        """Convert text to speech using Google Cloud TTS"""
+        """Convert text to speech using Google Cloud TTS REST API"""
         try:
             # Check if text is too long for a single request
             max_chars = 5000  # Google TTS limit
@@ -101,17 +70,52 @@ class AudioProcessor:
             return None
     
     def _google_synthesize_text(self, text: str) -> Optional[bytes]:
-        """Synthesize a single chunk of text using Google TTS"""
+        """Synthesize a single chunk of text using Google TTS REST API"""
         try:
-            synthesis_input = texttospeech.SynthesisInput(text=text)
+            # Get voice settings from database
+            voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-J")
+            speaking_rate = self.db.get_setting("speaking_rate", 1.0)
             
-            response = self.google_tts_client.synthesize_speech(
-                input=synthesis_input,
-                voice=self.voice,
-                audio_config=self.audio_config
-            )
+            # Google Cloud TTS REST API endpoint
+            url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={self.api_key}"
             
-            return response.audio_content
+            # Request payload
+            payload = {
+                "input": {
+                    "text": text
+                },
+                "voice": {
+                    "languageCode": "en-US",
+                    "name": voice_name,
+                    "ssmlGender": "NEUTRAL"
+                },
+                "audioConfig": {
+                    "audioEncoding": "MP3",
+                    "speakingRate": float(speaking_rate),
+                    "pitch": 0.0
+                }
+            }
+            
+            # Make the request
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(url, json=payload, headers=headers)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "audioContent" in result:
+                    # Decode base64 audio content
+                    import base64
+                    audio_content = base64.b64decode(result["audioContent"])
+                    return audio_content
+                else:
+                    print("No audio content in response")
+                    return None
+            else:
+                print(f"TTS API error: {response.status_code} - {response.text}")
+                return None
             
         except Exception as e:
             print(f"Error synthesizing text chunk: {str(e)}")
