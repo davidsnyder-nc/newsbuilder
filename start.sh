@@ -62,13 +62,7 @@ echo ""
 # Activate virtual environment
 source venv/bin/activate
 
-# Check if GEMINI_API_KEY is set
-if [ -z "$GEMINI_API_KEY" ]; then
-    echo "⚠️  WARNING: GEMINI_API_KEY not set!"
-    echo "   Please set your Gemini API key in the .env file or as an environment variable."
-    echo "   The app will still run but AI features won't work."
-    echo ""
-fi
+# Note: API key can be configured through the web interface Settings page
 
 # Start the Streamlit application
 streamlit run app.py --server.port=$FINAL_PORT --server.address=$FINAL_HOST --server.headless=true
