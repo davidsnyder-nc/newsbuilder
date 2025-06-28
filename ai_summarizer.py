@@ -19,9 +19,8 @@ class AISummarizer:
             api_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
             if api_key:
                 self.gemini_client = genai.Client(api_key=api_key)
-                # the newest Gemini model is "gemini-2.5-flash" 
-                # do not change this unless explicitly requested by the user
-                self.model = "gemini-2.5-flash"
+                # Use the fastest Gemini model for speed optimization
+                self.model = "gemini-1.5-flash"
                 print("Gemini AI initialized for summarization")
             else:
                 print("No Gemini API key found")
@@ -31,16 +30,16 @@ class AISummarizer:
     def summarize_article(self, text: str) -> Optional[str]:
         """Summarize a single article"""
         try:
-            prompt = f"""Please create a concise summary of the following article. 
-            
-            IMPORTANT FORMATTING REQUIREMENTS:
-            - Write in clear, flowing paragraphs with natural line breaks
-            - Use simple, conversational language suitable for text-to-speech
-            - NO asterisks, bullet points, or special formatting characters
-            - NO article titles or source names in the summary
-            - NO hashtags, quotes, or markdown formatting
-            - Focus on the key information as if you're telling someone about it in conversation
-            - Use complete sentences and proper paragraph structure
+            prompt = f"""Create a clear, concise summary of this article using proper paragraph formatting:
+
+            FORMATTING REQUIREMENTS:
+            - Write 2-3 well-structured paragraphs with clear line breaks between them
+            - Start each paragraph on a new line with proper spacing
+            - Use conversational, easy-to-read language
+            - NO bullet points, asterisks, or special formatting
+            - NO article titles or source names
+            - Focus on the main points and key details
+            - Make it sound natural for reading aloud
 
             Article text:
             {text}"""
@@ -48,7 +47,7 @@ class AISummarizer:
             # Generate summary using Gemini only
             if self.gemini_client:
                 response = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-1.5-flash",
                     contents=prompt
                 )
                 response_text = response.text or ""
@@ -99,18 +98,16 @@ class AISummarizer:
                 return None
             
             # Combine all summaries into one cohesive summary
-            combined_prompt = """Create a cohesive summary from the following individual article summaries. 
+            combined_prompt = """Create a comprehensive news summary by combining these individual article summaries:
 
-            IMPORTANT FORMATTING REQUIREMENTS:
-            - Write in clear, flowing paragraphs with natural line breaks
-            - Use simple, conversational language suitable for text-to-speech
-            - NO asterisks, bullet points, or special formatting characters
-            - NO article titles or source names in the summary
-            - NO hashtags, quotes, or markdown formatting
-            - Focus on the key themes and information across all articles
-            - Present information as if you're having a conversation about the news
+            FORMATTING REQUIREMENTS:
+            - Write 3-4 well-structured paragraphs with clear line breaks
             - Group related topics together naturally
-            - Use complete sentences and proper paragraph structure
+            - Use conversational, natural language for audio playback
+            - NO bullet points, asterisks, or special formatting
+            - NO source names or article titles
+            - Present as a flowing narrative about current events
+            - Make smooth transitions between different topics
 
             Individual summaries to combine:
             """
@@ -121,7 +118,7 @@ class AISummarizer:
             # Generate combined summary using Gemini only
             if self.gemini_client:
                 response = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-1.5-flash",
                     contents=combined_prompt
                 )
                 response_text = response.text or ""
@@ -160,7 +157,7 @@ class AISummarizer:
             # Generate focused summary using Gemini only
             if self.gemini_client:
                 response = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-1.5-flash",
                     contents=prompt
                 )
                 response_text = response.text or ""
@@ -198,8 +195,17 @@ class AISummarizer:
         text = text.replace('"', '').replace('"', '').replace('"', '')
         text = text.replace(''', "'").replace(''', "'")
         
-        # Clean up multiple spaces and line breaks
-        text = ' '.join(text.split())
+        # Preserve paragraph breaks but clean up excessive spacing
+        lines = text.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            cleaned_line = ' '.join(line.split())  # Clean internal spacing
+            if cleaned_line.strip():  # Only keep non-empty lines
+                cleaned_lines.append(cleaned_line)
+        
+        # Rejoin with proper paragraph spacing
+        text = '\n\n'.join(cleaned_lines)
         
         # Add natural pauses for better TTS flow
         text = text.replace('. ', '. ')
