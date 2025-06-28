@@ -30,25 +30,42 @@ class AudioProcessor:
         # Try Google Cloud TTS first (using Gemini API key)
         if GOOGLE_TTS_AVAILABLE:
             try:
-                # For Google TTS, we can use the Gemini API key
+                # Use Gemini API key for Google Cloud TTS
                 gemini_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
                 if gemini_key:
-                    # Set up authentication for Google Cloud
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gemini_key
-                
-                self.google_tts_client = texttospeech.TextToSpeechClient()
-                self.voice = texttospeech.VoiceSelectionParams(
-                    language_code="en-US",
-                    name="en-US-Neural2-J",
-                    ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-                )
-                self.audio_config = texttospeech.AudioConfig(
-                    audio_encoding=texttospeech.AudioEncoding.MP3,
-                    speaking_rate=1.0,
-                    pitch=0.0
-                )
-                self.tts_method = "google"
-                print("Google Cloud TTS initialized successfully using Gemini API key")
+                    # Create a temporary credentials file from the Gemini API key
+                    import tempfile
+                    import json
+                    
+                    # Create Google Cloud service account structure using Gemini key
+                    credentials_data = {
+                        "type": "service_account",
+                        "project_id": "gemini-project",
+                        "private_key_id": "1",
+                        "private_key": f"-----BEGIN PRIVATE KEY-----\n{gemini_key}\n-----END PRIVATE KEY-----\n",
+                        "client_email": "gemini@gemini-project.iam.gserviceaccount.com",
+                        "client_id": "1",
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token"
+                    }
+                    
+                    # Actually, let's use the Gemini key directly as API key
+                    os.environ["GOOGLE_API_KEY"] = gemini_key
+                    self.google_tts_client = texttospeech.TextToSpeechClient()
+                    self.voice = texttospeech.VoiceSelectionParams(
+                        language_code="en-US",
+                        name="en-US-Neural2-J",
+                        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+                    )
+                    self.audio_config = texttospeech.AudioConfig(
+                        audio_encoding=texttospeech.AudioEncoding.MP3,
+                        speaking_rate=1.0,
+                        pitch=0.0
+                    )
+                    self.tts_method = "google"
+                    print("Google Cloud TTS initialized successfully using Gemini API key")
+                else:
+                    print("Gemini API key not found - cannot initialize Google TTS")
             except Exception as e:
                 print(f"Google Cloud TTS initialization failed: {str(e)}")
         
@@ -60,11 +77,13 @@ class AudioProcessor:
                     self.openai_client = OpenAI(api_key=api_key)
                     self.tts_method = "openai"
                     print("OpenAI TTS initialized as fallback")
+                else:
+                    print("OpenAI API key not found")
             except Exception as e:
                 print(f"OpenAI TTS initialization failed: {str(e)}")
         
         if not self.tts_method:
-            print("No TTS service available - please check your API keys in Settings")
+            print("No TTS service available - please configure Gemini API key in Settings for Google TTS")
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """
@@ -86,7 +105,11 @@ class AudioProcessor:
                 return self._google_text_to_speech(text, output_path)
             
         except Exception as e:
-            print(f"Error in text to speech: {str(e)}")
+            error_msg = str(e)
+            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                print("Failed to generate audio - OpenAI API quota exceeded. Please check your OpenAI billing or use Google Cloud TTS instead.")
+                return None
+            print(f"Error in text to speech: {error_msg}")
             return None
     
     def _openai_text_to_speech(self, text: str, output_path: str) -> Optional[str]:
@@ -112,7 +135,11 @@ class AudioProcessor:
                 return self._openai_synthesize_long_text(text, output_path)
             
         except Exception as e:
-            print(f"Error with OpenAI TTS: {str(e)}")
+            error_msg = str(e)
+            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                print("Failed to generate audio - OpenAI API quota exceeded. Please check your OpenAI billing.")
+            else:
+                print(f"Error with OpenAI TTS: {error_msg}")
             return None
     
     def _openai_synthesize_long_text(self, text: str, output_path: str) -> Optional[str]:

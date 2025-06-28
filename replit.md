@@ -78,11 +78,13 @@ The main Streamlit application orchestrates all components and provides:
 
 ### External Services
 - **Google Gemini API**: AI text summarization
-- **Google Cloud Text-to-Speech**: Audio generation
+- **OpenAI API**: Alternative AI summarization and primary text-to-speech service
+- **Google Cloud Text-to-Speech**: Alternative audio generation (requires separate setup)
 
 ### Environment Variables
 - `GEMINI_API_KEY`: Required for AI summarization functionality
-- `GOOGLE_APPLICATION_CREDENTIALS`: Required for Google Cloud TTS authentication
+- `OPENAI_API_KEY`: Required for OpenAI-based summarization and text-to-speech
+- `GOOGLE_APPLICATION_CREDENTIALS`: Optional - for Google Cloud TTS authentication (advanced users)
 
 ## Deployment Strategy
 

@@ -435,7 +435,7 @@ elif current_page == "summary":
                                 st.session_state.audio_file = audio_file
                                 st.success("Audio generated!")
                             else:
-                                st.error("Failed to generate audio - please check your OpenAI API key quota")
+                                st.error("Failed to generate audio - OpenAI API quota exceeded. Please check your OpenAI billing or configure Google Cloud TTS credentials.")
                         except Exception as e:
                             error_msg = str(e)
                             if "quota" in error_msg.lower() or "429" in error_msg:
