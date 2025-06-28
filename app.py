@@ -699,7 +699,7 @@ elif current_page == "settings":
         with col2:
             st.warning("Danger Zone")
             if st.button("Clear All Data", use_container_width=True):
-                if st.button("⚠️ Confirm Delete All", type="secondary"):
+                if st.button("Confirm Delete All", type="secondary"):
                     # This would need implementation
                     st.error("This feature is not yet implemented for safety")
 
