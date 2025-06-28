@@ -7,6 +7,7 @@ from article_scraper import ArticleScraper
 from ai_summarizer import AISummarizer
 from audio_processor import AudioProcessor
 from database import DatabaseManager
+from svg_icons import get_svg_icon, svg_icon_html
 
 # Configure page
 st.set_page_config(
@@ -33,16 +34,16 @@ def get_managers():
 db, rss_manager, bookmark_manager, article_scraper, ai_summarizer, audio_processor = get_managers()
 
 # Navigation
-st.sidebar.title("📰 RSS Reader")
+st.sidebar.markdown(f'<h1 style="margin: 0;">{svg_icon_html("rss", 24)} RSS Reader</h1>', unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
 # Navigation menu
 pages = {
-    "📖 Read Articles": "articles",
-    "📊 RSS Feeds": "feeds", 
-    "🔖 Bookmarks": "bookmarks",
-    "📄 Summary": "summary",
-    "⚙️ Settings": "settings"
+    f"{svg_icon_html('articles', 16)} Read Articles": "articles",
+    f"{svg_icon_html('feeds', 16)} RSS Feeds": "feeds", 
+    f"{svg_icon_html('bookmark', 16)} Bookmarks": "bookmarks",
+    f"{svg_icon_html('summary', 16)} Summary": "summary",
+    f"{svg_icon_html('settings', 16)} Settings": "settings"
 }
 
 # Use query params for navigation
@@ -57,7 +58,7 @@ for page_name, page_key in pages.items():
 
 # Quick stats in sidebar
 st.sidebar.markdown("---")
-st.sidebar.subheader("📊 Quick Stats")
+st.sidebar.markdown(f'<h3>{svg_icon_html("chart", 20)} Quick Stats</h3>', unsafe_allow_html=True)
 
 feeds_count = len(rss_manager.get_feeds())
 bookmarks_count = bookmark_manager.get_bookmark_count()
@@ -374,17 +375,20 @@ elif current_page == "settings":
         current_gemini_key = db.get_setting("GEMINI_API_KEY", "")
         current_openai_key = db.get_setting("OPENAI_API_KEY", "")
         
+        # Show/hide toggle for API keys
+        show_keys = st.checkbox("Show API Keys", value=False)
+        
         gemini_key = st.text_input(
             "Gemini API Key", 
-            value="*" * 20 if current_gemini_key else "",
-            type="password",
+            value=current_gemini_key if show_keys else ("*" * 20 if current_gemini_key else ""),
+            type="default" if show_keys else "password",
             help="Get your API key from https://ai.google.dev"
         )
         
         openai_key = st.text_input(
             "OpenAI API Key", 
-            value="*" * 20 if current_openai_key else "",
-            type="password", 
+            value=current_openai_key if show_keys else ("*" * 20 if current_openai_key else ""),
+            type="default" if show_keys else "password", 
             help="Get your API key from https://platform.openai.com"
         )
         
