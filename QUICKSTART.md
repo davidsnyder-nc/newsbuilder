@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/your-repo/rss-reader/main/quick-ins
 ### 2. Set Up API Key
 ```bash
 cd ~/rss-reader
-cp .env.template .env
+cp .env.example .env
 nano .env  # Add: GEMINI_API_KEY=your_key_here
 ```
 

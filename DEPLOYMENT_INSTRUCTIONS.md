@@ -46,7 +46,7 @@ cd rss-reader-deployment
 
 # Set up your API key
 cd ~/rss-reader
-cp .env.template .env
+cp .env.example .env
 nano .env  # Add: GEMINI_API_KEY=your_key_here
 
 # Start the application
@@ -68,7 +68,7 @@ cd rss-reader-deployment
 
 # Configure API key
 cd ~/rss-reader
-cp .env.template .env
+cp .env.example .env
 nano .env  # Add your GEMINI_API_KEY
 
 # Start application

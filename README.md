@@ -36,7 +36,7 @@ A powerful RSS feed reader that combines AI-driven summarization, multi-source n
 2. **Set up your API key**:
    ```bash
    cd ~/rss-reader
-   cp .env.template .env
+   cp .env.example .env
    nano .env  # Add your GEMINI_API_KEY
    ```
 

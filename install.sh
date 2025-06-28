@@ -56,17 +56,8 @@ mkdir -p app
 mkdir -p data
 mkdir -p logs
 
-# Set up environment variables template
-cat > .env.template << 'EOF'
-# Required: Google Gemini API Key for AI summarization and text-to-speech
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Optional: Custom port (default is 5000)
-PORT=5000
-
-# Optional: Host binding (default is 0.0.0.0 for all interfaces)
-HOST=0.0.0.0
-EOF
+# Note: .env.example file should be copied from the repository
+# Users will copy .env.example to .env and add their API key
 
 # Create startup script
 cat > start.sh << 'EOF'
@@ -167,7 +158,7 @@ echo ""
 echo "📋 Next steps:"
 echo "1. Copy your application files to: $PROJECT_DIR/app/"
 echo "2. Set up your Gemini API key:"
-echo "   cp .env.template .env"
+echo "   cp .env.example .env"
 echo "   nano .env  # Edit and add your GEMINI_API_KEY"
 echo ""
 echo "🚀 To start the application:"
