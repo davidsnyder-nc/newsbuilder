@@ -18,26 +18,24 @@ except ImportError:
     OPENAI_AVAILABLE = False
 
 class AudioProcessor:
-    def __init__(self):
-        # Initialize TTS with fallback options
+    def __init__(self, db_manager=None):
+        from database import DatabaseManager
+        self.db = db_manager or DatabaseManager()
+        
+        # Initialize TTS with Google as primary choice
         self.google_tts_client = None
         self.openai_client = None
         self.tts_method = None
         
-        # Try OpenAI TTS first (more reliable in this environment)
-        if OPENAI_AVAILABLE:
+        # Try Google Cloud TTS first (using Gemini API key)
+        if GOOGLE_TTS_AVAILABLE:
             try:
-                api_key = os.getenv("OPENAI_API_KEY")
-                if api_key:
-                    self.openai_client = OpenAI(api_key=api_key)
-                    self.tts_method = "openai"
-                    print("OpenAI TTS initialized successfully")
-            except Exception as e:
-                print(f"OpenAI TTS initialization failed: {str(e)}")
-        
-        # Fallback to Google Cloud TTS if OpenAI not available
-        if not self.tts_method and GOOGLE_TTS_AVAILABLE:
-            try:
+                # For Google TTS, we can use the Gemini API key
+                gemini_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+                if gemini_key:
+                    # Set up authentication for Google Cloud
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gemini_key
+                
                 self.google_tts_client = texttospeech.TextToSpeechClient()
                 self.voice = texttospeech.VoiceSelectionParams(
                     language_code="en-US",
@@ -50,12 +48,23 @@ class AudioProcessor:
                     pitch=0.0
                 )
                 self.tts_method = "google"
-                print("Google Cloud TTS initialized successfully")
+                print("Google Cloud TTS initialized successfully using Gemini API key")
             except Exception as e:
                 print(f"Google Cloud TTS initialization failed: {str(e)}")
         
+        # Fallback to OpenAI TTS if Google not available
+        if not self.tts_method and OPENAI_AVAILABLE:
+            try:
+                api_key = self.db.get_setting("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+                if api_key:
+                    self.openai_client = OpenAI(api_key=api_key)
+                    self.tts_method = "openai"
+                    print("OpenAI TTS initialized as fallback")
+            except Exception as e:
+                print(f"OpenAI TTS initialization failed: {str(e)}")
+        
         if not self.tts_method:
-            print("No TTS service available")
+            print("No TTS service available - please check your API keys in Settings")
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """

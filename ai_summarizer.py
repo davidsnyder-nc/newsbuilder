@@ -4,13 +4,54 @@ from google.genai import types
 from typing import List, Dict, Optional
 
 class AISummarizer:
-    def __init__(self):
-        # Get API key from environment variables with fallback
-        api_key = os.getenv("GEMINI_API_KEY", "default_key")
-        self.client = genai.Client(api_key=api_key)
-        # the newest Gemini model is "gemini-2.5-flash" 
-        # do not change this unless explicitly requested by the user
-        self.model = "gemini-2.5-flash"
+    def __init__(self, db_manager=None):
+        from database import DatabaseManager
+        self.db = db_manager or DatabaseManager()
+        
+        # Get preferred AI service from settings
+        self.ai_service = self.db.get_setting("ai_service", "gemini")
+        
+        # Initialize based on preferred service
+        self.gemini_client = None
+        self.openai_client = None
+        
+        if self.ai_service == "gemini":
+            self._init_gemini()
+        else:
+            self._init_openai()
+    
+    def _init_gemini(self):
+        """Initialize Gemini client"""
+        try:
+            # Get API key from database first, then environment
+            api_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+            if api_key:
+                self.gemini_client = genai.Client(api_key=api_key)
+                # the newest Gemini model is "gemini-2.5-flash" 
+                # do not change this unless explicitly requested by the user
+                self.model = "gemini-2.5-flash"
+                print("Gemini AI initialized for summarization")
+            else:
+                print("No Gemini API key found")
+        except Exception as e:
+            print(f"Failed to initialize Gemini: {str(e)}")
+    
+    def _init_openai(self):
+        """Initialize OpenAI client"""
+        try:
+            # Get API key from database first, then environment
+            api_key = self.db.get_setting("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+            if api_key:
+                from openai import OpenAI
+                self.openai_client = OpenAI(api_key=api_key)
+                # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
+                # do not change this unless explicitly requested by the user
+                self.model = "gpt-4o"
+                print("OpenAI initialized for summarization")
+            else:
+                print("No OpenAI API key found")
+        except Exception as e:
+            print(f"Failed to initialize OpenAI: {str(e)}")
     
     def summarize_article(self, text: str) -> Optional[str]:
         """Summarize a single article"""
@@ -28,14 +69,25 @@ class AISummarizer:
 
             {text}"""
             
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt
-            )
+            if self.ai_service == "gemini" and self.gemini_client:
+                response = self.gemini_client.models.generate_content(
+                    model=self.model,
+                    contents=prompt
+                )
+                response_text = response.text
+            elif self.ai_service == "openai" and self.openai_client:
+                response = self.openai_client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                response_text = response.choices[0].message.content
+            else:
+                print(f"No {self.ai_service} client available")
+                return None
             
             # Clean up the response to ensure it meets our formatting requirements
-            if response.text:
-                cleaned_text = self._clean_summary_text(response.text)
+            if response_text:
+                cleaned_text = self._clean_summary_text(response_text)
                 return cleaned_text
             else:
                 return None
@@ -97,14 +149,25 @@ class AISummarizer:
             Here is the content to summarize:
             {combined_text}"""
             
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=final_prompt
-            )
+            if self.ai_service == "gemini" and self.gemini_client:
+                response = self.gemini_client.models.generate_content(
+                    model=self.model,
+                    contents=final_prompt
+                )
+                response_text = response.text
+            elif self.ai_service == "openai" and self.openai_client:
+                response = self.openai_client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": final_prompt}]
+                )
+                response_text = response.choices[0].message.content
+            else:
+                print(f"No {self.ai_service} client available")
+                return None
             
             # Clean up the response to ensure it meets our formatting requirements
-            if response.text:
-                cleaned_text = self._clean_summary_text(response.text)
+            if response_text:
+                cleaned_text = self._clean_summary_text(response_text)
                 return cleaned_text
             else:
                 return None
@@ -122,12 +185,21 @@ class AISummarizer:
 
             {text}"""
             
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt
-            )
-            
-            return response.text if response.text else None
+            if self.ai_service == "gemini" and self.gemini_client:
+                response = self.gemini_client.models.generate_content(
+                    model=self.model,
+                    contents=prompt
+                )
+                return response.text if response.text else None
+            elif self.ai_service == "openai" and self.openai_client:
+                response = self.openai_client.chat.completions.create(
+                    model=self.model,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return response.choices[0].message.content if response.choices[0].message.content else None
+            else:
+                print(f"No {self.ai_service} client available")
+                return None
             
         except Exception as e:
             print(f"Error summarizing with focus: {str(e)}")

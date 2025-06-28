@@ -403,6 +403,22 @@ elif current_page == "settings":
     # App Settings section
     st.subheader("🎛️ Application Settings")
     
+    with st.expander("AI Settings", expanded=True):
+        # AI service selection
+        ai_services = ["gemini", "openai"]
+        current_ai_service = db.get_setting("ai_service", "gemini")
+        
+        selected_ai_service = st.selectbox(
+            "AI Summarization Service",
+            ai_services,
+            index=ai_services.index(current_ai_service) if current_ai_service in ai_services else 0,
+            help="Choose between Gemini and OpenAI for article summarization"
+        )
+        
+        if st.button("💾 Save AI Settings"):
+            db.save_setting("ai_service", selected_ai_service)
+            st.success("AI service settings saved! Restart may be needed for changes to take effect.")
+    
     with st.expander("Audio Settings", expanded=True):
         # Voice selection for TTS
         voice_options = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
