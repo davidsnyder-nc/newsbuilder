@@ -221,7 +221,7 @@ if current_page == "articles":
                         
                         with col2:
                             st.markdown(f"**{article['title']}**")
-                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                            st.caption(f"{article['feed_name']} • {article.get('published', 'No date')}")
                             
                             if article['summary']:
                                 summary_text = article['summary'][:120] + "..." if len(article['summary']) > 120 else article['summary']
@@ -229,16 +229,16 @@ if current_page == "articles":
                         
                         with col3:
                             if article['link']:
-                                st.link_button("🔗", article['link'], help="Read Full Article")
+                                st.link_button("Read", article['link'], help="Read Full Article")
                         
                         with col4:
                             is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                             
                             if is_bookmarked:
-                                if st.button("🔖", key=f"bookmark_img_{article['link']}", disabled=True, help="Bookmarked"):
+                                if st.button("✓", key=f"bookmark_img_{article['link']}", disabled=True, help="Bookmarked"):
                                     pass
                             else:
-                                if st.button("📌", key=f"bookmark_img_{article['link']}", help="Bookmark"):
+                                if st.button("Save", key=f"bookmark_img_{article['link']}", help="Bookmark"):
                                     if bookmark_manager.add_bookmark(article):
                                         st.success("Bookmarked!")
                                         st.rerun()
@@ -249,7 +249,7 @@ if current_page == "articles":
                         
                         with col1:
                             st.markdown(f"**{article['title']}**")
-                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                            st.caption(f"{article['feed_name']} • {article.get('published', 'No date')}")
                             
                             if article['summary']:
                                 summary_text = article['summary'][:150] + "..." if len(article['summary']) > 150 else article['summary']
@@ -494,11 +494,11 @@ elif current_page == "summary":
                 )
             
             with col2:
-                if st.button("📋 Copy to Clipboard", use_container_width=True):
+                if st.button("Copy to Clipboard", use_container_width=True):
                     st.success("Use Ctrl+A and Ctrl+C in the text area above to copy!")
             
             # Audio generation section
-            st.markdown(f'<h3> Audio Options</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="md-title">Audio Options</h3>', unsafe_allow_html=True)
             
             # Initialize audio generation state
             if 'audio_generating' not in st.session_state:
@@ -506,7 +506,7 @@ elif current_page == "summary":
             
             # Audio generation button
             if not st.session_state.audio_generating:
-                if st.button("🎵 Generate Audio", use_container_width=True):
+                if st.button("Generate Audio", use_container_width=True):
                     st.session_state.audio_generating = True
                     st.rerun()
             
@@ -539,7 +539,7 @@ elif current_page == "summary":
                     with open(st.session_state.audio_file, 'rb') as f:
                         audio_data = f.read()
                     st.download_button(
-                        label="📥 Download MP3",
+                        label="Download MP3",
                         data=audio_data,
                         file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp3",
                         mime="audio/mp3",
