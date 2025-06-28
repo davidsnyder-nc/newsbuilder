@@ -262,7 +262,7 @@ elif current_page == "bookmarks":
                     
                     with col1:
                         try:
-                            st.image(bookmark['image_url'], width=150, use_column_width=False)
+                            st.image(bookmark['image_url'], width=150)
                         except:
                             pass  # Skip if image fails to load
                     
