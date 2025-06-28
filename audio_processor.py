@@ -59,11 +59,11 @@ class AudioProcessor:
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """
-        Convert text to speech using Google TTS
+        Convert text to speech using available TTS service
         Returns the path to the generated audio file
         """
-        if not self.tts_client:
-            print("TTS client not available")
+        if not self.tts_method:
+            print("No TTS service available")
             return None
         
         try:
@@ -71,30 +71,116 @@ class AudioProcessor:
             if not output_path:
                 output_path = tempfile.mktemp(suffix=".mp3")
             
+            if self.tts_method == "openai":
+                return self._openai_text_to_speech(text, output_path)
+            elif self.tts_method == "google":
+                return self._google_text_to_speech(text, output_path)
+            
+        except Exception as e:
+            print(f"Error in text to speech: {str(e)}")
+            return None
+    
+    def _openai_text_to_speech(self, text: str, output_path: str) -> Optional[str]:
+        """Convert text to speech using OpenAI TTS"""
+        try:
+            # Check if text is too long for a single request
+            max_chars = 4096  # OpenAI TTS limit
+            
+            if len(text) <= max_chars:
+                # Single request
+                response = self.openai_client.audio.speech.create(
+                    model="tts-1",
+                    voice="alloy",
+                    input=text,
+                    response_format="mp3"
+                )
+                
+                with open(output_path, 'wb') as f:
+                    f.write(response.content)
+                return output_path
+            else:
+                # Split into chunks and combine
+                return self._openai_synthesize_long_text(text, output_path)
+            
+        except Exception as e:
+            print(f"Error with OpenAI TTS: {str(e)}")
+            return None
+    
+    def _openai_synthesize_long_text(self, text: str, output_path: str) -> Optional[str]:
+        """Synthesize long text using OpenAI TTS by splitting into chunks"""
+        try:
+            # Split text into chunks
+            chunks = self._split_text_into_chunks(text, 4000)  # Leave some buffer
+            
+            if not chunks:
+                return None
+            
+            # Synthesize each chunk
+            audio_segments = []
+            
+            for i, chunk in enumerate(chunks):
+                try:
+                    response = self.openai_client.audio.speech.create(
+                        model="tts-1",
+                        voice="alloy",
+                        input=chunk,
+                        response_format="mp3"
+                    )
+                    
+                    # Convert to AudioSegment
+                    audio_segment = AudioSegment.from_mp3(io.BytesIO(response.content))
+                    audio_segments.append(audio_segment)
+                except Exception as e:
+                    print(f"Failed to synthesize chunk {i+1}: {str(e)}")
+            
+            if not audio_segments:
+                return None
+            
+            # Combine all audio segments
+            combined_audio = audio_segments[0]
+            for segment in audio_segments[1:]:
+                # Add a small pause between segments
+                pause = AudioSegment.silent(duration=500)  # 500ms pause
+                combined_audio = combined_audio + pause + segment
+            
+            # Export combined audio
+            combined_audio.export(output_path, format="mp3")
+            return output_path
+            
+        except Exception as e:
+            print(f"Error synthesizing long text with OpenAI: {str(e)}")
+            return None
+    
+    def _google_text_to_speech(self, text: str, output_path: str) -> Optional[str]:
+        """Convert text to speech using Google Cloud TTS"""
+        try:
             # Check if text is too long for a single request
             max_chars = 5000  # Google TTS limit is around 5000 characters
             
             if len(text) <= max_chars:
                 # Single request
-                audio_content = self._synthesize_text(text)
+                audio_content = self._google_synthesize_text(text)
                 if audio_content:
                     with open(output_path, 'wb') as f:
                         f.write(audio_content)
                     return output_path
             else:
                 # Split into chunks and combine
-                return self._synthesize_long_text(text, output_path)
+                return self._google_synthesize_long_text(text, output_path)
             
         except Exception as e:
-            print(f"Error in text to speech: {str(e)}")
+            print(f"Error with Google TTS: {str(e)}")
             return None
     
-    def _synthesize_text(self, text: str) -> Optional[bytes]:
-        """Synthesize a single chunk of text"""
+    def _google_synthesize_text(self, text: str) -> Optional[bytes]:
+        """Synthesize a single chunk of text using Google TTS"""
         try:
+            if not GOOGLE_TTS_AVAILABLE:
+                return None
+                
             synthesis_input = texttospeech.SynthesisInput(text=text)
             
-            response = self.tts_client.synthesize_speech(
+            response = self.google_tts_client.synthesize_speech(
                 input=synthesis_input,
                 voice=self.voice,
                 audio_config=self.audio_config
@@ -106,9 +192,9 @@ class AudioProcessor:
             print(f"Error synthesizing text: {str(e)}")
             return None
     
-    def _synthesize_long_text(self, text: str, output_path: str) -> Optional[str]:
+    def _google_synthesize_long_text(self, text: str, output_path: str) -> Optional[str]:
         """
-        Synthesize long text by splitting into chunks and combining audio files
+        Synthesize long text using Google TTS by splitting into chunks and combining audio files
         """
         try:
             # Split text into chunks
@@ -121,7 +207,7 @@ class AudioProcessor:
             audio_segments = []
             
             for i, chunk in enumerate(chunks):
-                audio_content = self._synthesize_text(chunk)
+                audio_content = self._google_synthesize_text(chunk)
                 if audio_content:
                     # Convert to AudioSegment
                     audio_segment = AudioSegment.from_mp3(io.BytesIO(audio_content))
@@ -144,7 +230,7 @@ class AudioProcessor:
             return output_path
             
         except Exception as e:
-            print(f"Error synthesizing long text: {str(e)}")
+            print(f"Error synthesizing long text with Google: {str(e)}")
             return None
     
     def _split_text_into_chunks(self, text: str, max_chars: int) -> list:
