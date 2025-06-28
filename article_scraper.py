@@ -12,17 +12,25 @@ class ArticleScraper:
         Returns clean, readable text content
         """
         try:
+            print(f"Scraping full article from: {url}")
+            
             # Use trafilatura to fetch and extract content
             downloaded = trafilatura.fetch_url(url)
             if not downloaded:
+                print(f"Failed to download content from {url}")
                 return None
+            
+            print(f"Downloaded {len(downloaded)} bytes from {url}")
             
             # Extract the main text content
             text = trafilatura.extract(downloaded)
             
             if text and len(text.strip()) > 100:  # Ensure we got meaningful content
+                print(f"Extracted {len(text)} characters of article text from {url}")
+                print(f"Article preview: {text[:200]}...")
                 return text.strip()
             else:
+                print(f"No meaningful content extracted from {url}")
                 return None
                 
         except Exception as e:

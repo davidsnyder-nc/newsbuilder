@@ -56,6 +56,13 @@ class AISummarizer:
             # First, summarize each article individually
             individual_summaries = []
             for article in articles:
+                content_length = len(article['content'])
+                print(f"Processing article: {article['title'][:50]}... ({content_length} characters)")
+                
+                # Log content preview to verify we have full article content
+                content_preview = article['content'][:300].replace('\n', ' ')
+                print(f"Content preview: {content_preview}...")
+                
                 summary = self.summarize_article(article['content'])
                 if summary:
                     individual_summaries.append({
@@ -63,6 +70,7 @@ class AISummarizer:
                         'summary': summary,
                         'source': article['source']
                     })
+                    print(f"Generated summary for: {article['title'][:50]}...")
             
             if not individual_summaries:
                 return None
