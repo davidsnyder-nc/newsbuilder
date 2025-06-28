@@ -407,7 +407,7 @@ elif current_page == "settings":
         selected_voice = st.selectbox(
             "Text-to-Speech Voice",
             voice_options,
-            index=voice_options.index(current_voice) if current_voice and current_voice in voice_options else 0
+            index=voice_options.index(current_voice) if current_voice in voice_options else 0
         )
         
         # Speaking rate

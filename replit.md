@@ -98,9 +98,17 @@ Key deployment considerations:
 - Internet access required for RSS feeds and external APIs
 - Google Cloud credentials needed for TTS functionality
 
+## Recent Changes
+
+- June 28, 2025: Restructured application into multi-page interface with separate pages for RSS feeds, bookmarks, summary generation, and settings
+- June 28, 2025: Implemented SQLite database for persistent storage of RSS feeds, articles, bookmarks, and user settings
+- June 28, 2025: Enhanced AI summarization with improved text sanitization for optimal text-to-speech conversion
+- June 28, 2025: Added OpenAI TTS as primary audio service with fallback to Google Cloud TTS
+- June 28, 2025: Settings page now allows users to input and persist API keys across browser sessions
+
 ## Changelog
 
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup and multi-page restructure completed
 
 ## User Preferences
 
