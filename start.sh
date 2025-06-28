@@ -1,26 +1,35 @@
 #!/bin/bash
 
 # RSS Reader Startup Script
-# Starts the Streamlit application with proper configuration
 
-set -e
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-# Default port
-PORT=5000
-VENV_DIR="venv"
+# Default values
+DEFAULT_PORT=5000
+DEFAULT_HOST="0.0.0.0"
 
 # Parse command line arguments
+PORT=$DEFAULT_PORT
+HOST=$DEFAULT_HOST
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         -p|--port)
             PORT="$2"
             shift 2
             ;;
+        -h|--host)
+            HOST="$2"
+            shift 2
+            ;;
         --help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  -p, --port PORT    Port number (default: 5000)"
+            echo "  -p, --port PORT    Port to run the server on (default: 5000)"
+            echo "  -h, --host HOST    Host to bind to (default: 0.0.0.0)"
             echo "  --help             Show this help message"
             exit 0
             ;;
@@ -32,36 +41,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "🚀 Starting RSS Reader..."
-echo "📱 Application will be available at: http://localhost:$PORT"
-
-# Check if virtual environment exists
-if [ ! -d "$VENV_DIR" ]; then
-    echo "❌ Virtual environment not found: $VENV_DIR"
-    echo "Please run the install.sh script first."
-    exit 1
+# Load environment variables if .env file exists
+if [ -f .env ]; then
+    echo "Loading environment variables from .env file..."
+    export $(cat .env | grep -v '^#' | xargs)
 fi
 
+# Use environment variables if set, otherwise use command line args
+FINAL_PORT=${PORT:-$DEFAULT_PORT}
+FINAL_HOST=${HOST:-$DEFAULT_HOST}
+
+echo "Starting RSS Reader..."
+echo "Host: $FINAL_HOST"
+echo "Port: $FINAL_PORT"
+echo ""
+echo "Access the application at: http://localhost:$FINAL_PORT"
+echo "Press Ctrl+C to stop the server"
+echo ""
+
 # Activate virtual environment
-source "$VENV_DIR/bin/activate"
+source venv/bin/activate
 
-# Ensure .streamlit directory exists
-mkdir -p .streamlit
+# Check if GEMINI_API_KEY is set
+if [ -z "$GEMINI_API_KEY" ]; then
+    echo "⚠️  WARNING: GEMINI_API_KEY not set!"
+    echo "   Please set your Gemini API key in the .env file or as an environment variable."
+    echo "   The app will still run but AI features won't work."
+    echo ""
+fi
 
-# Create or update Streamlit config
-cat > .streamlit/config.toml << EOF
-[server]
-headless = true
-address = "0.0.0.0"
-port = $PORT
-
-[theme]
-primaryColor = "#1976d2"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f5f5f5"
-textColor = "#000000"
-EOF
-
-# Start the application
-echo "🔄 Starting Streamlit server on port $PORT..."
-exec streamlit run app.py --server.port "$PORT" --server.address "0.0.0.0"
+# Start the Streamlit application
+streamlit run app.py --server.port=$FINAL_PORT --server.address=$FINAL_HOST --server.headless=true
