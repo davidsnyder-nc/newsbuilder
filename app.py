@@ -116,7 +116,7 @@ if current_page == "articles":
                         
                         with col1:
                             try:
-                                st.image(article['image_url'], width=150, use_column_width=False)
+                                st.image(article['image_url'], width=150)
                             except:
                                 pass  # Skip if image fails to load
                         
