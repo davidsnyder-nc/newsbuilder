@@ -31,14 +31,19 @@ class AudioProcessor:
                     
                     # Initialize Google Cloud TTS client
                     self.google_tts_client = texttospeech.TextToSpeechClient()
+                    
+                    # Get voice settings from database
+                    voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-J")
+                    speaking_rate = self.db.get_setting("speaking_rate", 1.0)
+                    
                     self.voice = texttospeech.VoiceSelectionParams(
                         language_code="en-US",
-                        name="en-US-Neural2-J",
+                        name=voice_name,
                         ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
                     )
                     self.audio_config = texttospeech.AudioConfig(
                         audio_encoding=texttospeech.AudioEncoding.MP3,
-                        speaking_rate=1.0,
+                        speaking_rate=float(speaking_rate),
                         pitch=0.0
                     )
                     self.tts_method = "google"

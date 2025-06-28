@@ -454,12 +454,12 @@ elif current_page == "summary":
                             st.rerun()
                         else:
                             st.session_state.audio_generating = False
-                            st.error("Failed to generate audio - please check your OpenAI API key and quota.")
+                            st.error("Failed to generate audio - please check your Gemini API key and Google Cloud TTS setup.")
                     except Exception as e:
                         st.session_state.audio_generating = False
                         error_msg = str(e)
                         if "quota" in error_msg.lower() or "429" in error_msg:
-                            st.error("Your OpenAI API key has exceeded its quota. Please check your billing.")
+                            st.error("Your Google Cloud TTS quota has been exceeded. Please check your Google Cloud billing.")
                         else:
                             st.error(f"Error generating audio: {error_msg}")
             
@@ -488,68 +488,56 @@ elif current_page == "settings":
     st.caption("These keys are stored securely and persist across sessions")
     
     with st.expander("Configure API Keys", expanded=True):
-        # Get current API keys from database
+        # Get current Gemini API key from database
         current_gemini_key = db.get_setting("GEMINI_API_KEY", "")
-        current_openai_key = db.get_setting("OPENAI_API_KEY", "")
         
-        # Show/hide toggle for API keys
-        show_keys = st.checkbox("Show API Keys", value=False)
+        # Show/hide toggle for API key
+        show_key = st.checkbox("Show API Key", value=False)
         
         gemini_key = st.text_input(
             "Gemini API Key", 
-            value=current_gemini_key if show_keys else ("*" * 20 if current_gemini_key else ""),
-            type="default" if show_keys else "password",
-            help="Get your API key from https://ai.google.dev"
+            value=current_gemini_key if show_key else ("*" * 20 if current_gemini_key else ""),
+            type="default" if show_key else "password",
+            help="Get your API key from https://ai.google.dev - Used for both AI summarization and text-to-speech"
         )
         
-        openai_key = st.text_input(
-            "OpenAI API Key", 
-            value=current_openai_key if show_keys else ("*" * 20 if current_openai_key else ""),
-            type="default" if show_keys else "password", 
-            help="Get your API key from https://platform.openai.com"
-        )
-        
-        if st.button("💾 Save API Keys", type="primary"):
+        if st.button("💾 Save API Key", type="primary"):
             if gemini_key and not gemini_key.startswith("*"):
                 db.save_setting("GEMINI_API_KEY", gemini_key)
                 os.environ["GEMINI_API_KEY"] = gemini_key
-            
-            if openai_key and not openai_key.startswith("*"):
-                db.save_setting("OPENAI_API_KEY", openai_key)
-                os.environ["OPENAI_API_KEY"] = openai_key
-            
-            st.success("API keys saved successfully!")
-            st.rerun()
+                st.success("Gemini API key saved successfully!")
+                st.rerun()
+            else:
+                st.error("Please enter a valid API key")
     
     # App Settings section
     st.markdown(f'<h3>{svg_icon_html("settings", 24)} Application Settings</h3>', unsafe_allow_html=True)
     
-    with st.expander("AI Settings", expanded=True):
-        # AI service selection
-        ai_services = ["gemini", "openai"]
-        current_ai_service = db.get_setting("ai_service", "gemini")
-        
-        selected_ai_service = st.selectbox(
-            "AI Summarization Service",
-            ai_services,
-            index=ai_services.index(current_ai_service) if current_ai_service in ai_services else 0,
-            help="Choose between Gemini and OpenAI for article summarization"
-        )
-        
-        if st.button("💾 Save AI Settings"):
-            db.save_setting("ai_service", selected_ai_service)
-            st.success("AI service settings saved! Restart may be needed for changes to take effect.")
-    
     with st.expander("🔊 Audio Settings", expanded=True):
-        # Voice selection for TTS
-        voice_options = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
-        current_voice = db.get_setting("tts_voice", "alloy")
+        # Google TTS Voice selection
+        voice_options = [
+            ("en-US-Neural2-J", "Neural2-J (Neutral)"),
+            ("en-US-Neural2-H", "Neural2-H (Female)"), 
+            ("en-US-Neural2-I", "Neural2-I (Male)"),
+            ("en-US-Neural2-A", "Neural2-A (Female)"),
+            ("en-US-Neural2-C", "Neural2-C (Female)"),
+            ("en-US-Neural2-D", "Neural2-D (Male)")
+        ]
+        current_voice = db.get_setting("tts_voice", "en-US-Neural2-J")
         
-        selected_voice = st.selectbox(
-            "Text-to-Speech Voice",
-            voice_options,
-            index=voice_options.index(current_voice) if current_voice and current_voice in voice_options else 0
+        voice_labels = [label for _, label in voice_options]
+        voice_values = [value for value, _ in voice_options]
+        
+        current_index = voice_values.index(current_voice) if current_voice in voice_values else 0
+        
+        selected_voice_label = st.selectbox(
+            "Google Text-to-Speech Voice",
+            voice_labels,
+            index=current_index,
+            help="Choose a Google Cloud TTS voice for audio generation"
         )
+        
+        selected_voice = voice_values[voice_labels.index(selected_voice_label)]
         
         # Speaking rate
         speaking_rate = st.slider(
@@ -557,7 +545,8 @@ elif current_page == "settings":
             min_value=0.5, 
             max_value=2.0, 
             value=db.get_setting("speaking_rate", 1.0),
-            step=0.1
+            step=0.1,
+            help="Adjust the speed of the generated speech"
         )
         
         if st.button("💾 Save Audio Settings"):
