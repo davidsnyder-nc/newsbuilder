@@ -209,6 +209,7 @@ if current_page == "articles":
             # Display articles
             for article in filtered_articles[:articles_per_page]:
                 with st.container():
+                    st.markdown('<div class="material-card">', unsafe_allow_html=True)
                     # Check if article has an image
                     if article.get('image_url'):
                         col1, col2, col3, col4 = st.columns([1, 4, 1, 1])
@@ -257,23 +258,23 @@ if current_page == "articles":
                         
                         with col2:
                             if article['link']:
-                                st.link_button("🔗", article['link'], help="Read Full Article")
+                                st.link_button("Read", article['link'], help="Read Full Article")
                         
                         with col3:
                             is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                             
                             if is_bookmarked:
-                                if st.button("🔖", key=f"bookmark_txt_{article['link']}", disabled=True, help="Bookmarked"):
+                                if st.button("✓", key=f"bookmark_txt_{article['link']}", disabled=True, help="Bookmarked"):
                                     pass
                             else:
-                                if st.button("📌", key=f"bookmark_txt_{article['link']}", help="Bookmark"):
+                                if st.button("Save", key=f"bookmark_txt_{article['link']}", help="Bookmark"):
                                     if bookmark_manager.add_bookmark(article):
                                         st.success("Bookmarked!")
                                         st.rerun()
                                     else:
                                         st.error("Failed to bookmark")
                 
-                st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
 elif current_page == "feeds":
     st.markdown('<h1 class="md-headline">RSS Feed Management</h1>', unsafe_allow_html=True)
@@ -371,7 +372,7 @@ elif current_page == "bookmarks":
                     
                     with col2:
                         st.markdown(f"**{bookmark['title']}**")
-                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
+                        st.caption(f"{bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
                         
                         if bookmark['summary']:
                             summary_text = bookmark['summary'][:120] + "..." if len(bookmark['summary']) > 120 else bookmark['summary']
@@ -379,7 +380,7 @@ elif current_page == "bookmarks":
                     
                     with col3:
                         if bookmark['link']:
-                            st.link_button("🔗", bookmark['link'], help="Read Full Article")
+                            st.link_button("Read", bookmark['link'], help="Read Full Article")
                     
                     with col4:
                         if st.button("🗑️", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
@@ -391,7 +392,7 @@ elif current_page == "bookmarks":
                     
                     with col1:
                         st.markdown(f"**{bookmark['title']}**")
-                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
+                        st.caption(f"{bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
                         
                         if bookmark['summary']:
                             summary_text = bookmark['summary'][:150] + "..." if len(bookmark['summary']) > 150 else bookmark['summary']
