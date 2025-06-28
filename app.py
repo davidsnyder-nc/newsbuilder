@@ -27,18 +27,13 @@ st.markdown("""
         background-color: #fafafa;
     }
     
-    /* Material Design Cards */
-    .material-card {
+    /* Container styling for articles */
+    .stContainer {
         background: white;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         padding: 16px;
         margin: 8px 0;
-        transition: box-shadow 0.2s ease;
-    }
-    
-    .material-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     /* Material Design Typography */
@@ -209,7 +204,6 @@ if current_page == "articles":
             # Display articles
             for article in filtered_articles[:articles_per_page]:
                 with st.container():
-                    st.markdown('<div class="material-card">', unsafe_allow_html=True)
                     # Check if article has an image
                     if article.get('image_url'):
                         col1, col2, col3, col4 = st.columns([1, 4, 1, 1])
@@ -274,7 +268,7 @@ if current_page == "articles":
                                     else:
                                         st.error("Failed to bookmark")
                 
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    st.markdown("<hr style='margin: 0.5rem 0; border: none; border-top: 1px solid #e0e0e0;'>", unsafe_allow_html=True)
 
 elif current_page == "feeds":
     st.markdown('<h1 class="md-headline">RSS Feed Management</h1>', unsafe_allow_html=True)
