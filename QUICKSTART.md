@@ -11,11 +11,15 @@ curl -fsSL https://raw.githubusercontent.com/your-repo/rss-reader/main/quick-ins
 
 ### 1. Install Dependencies
 ```bash
-./install.sh
+# Create virtual environment and install packages
+python3 -m venv venv
+source venv/bin/activate
+pip install -r install-requirements.txt
 ```
 
 ### 2. Start Application
 ```bash
+chmod +x start.sh
 ./start.sh                    # Default: http://localhost:5000
 ./start.sh --port 8080        # Custom port: http://localhost:8080
 ```
@@ -56,6 +60,8 @@ tail -f logs/app.log
 
 - **Port busy**: Use `./start.sh --port 8080`
 - **Permission denied**: Run `chmod +x *.sh`
+- **ModuleNotFoundError**: Run `source venv/bin/activate && pip install -r install-requirements.txt`
+- **Directory listing instead of app**: Access `http://your-server-ip:5000` (not port 80)
 - **No API key**: Configure in Settings page via web interface
 
 That's it! Your RSS reader is ready to use.

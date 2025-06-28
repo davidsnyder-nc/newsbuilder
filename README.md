@@ -22,65 +22,84 @@ A powerful RSS feed reader that combines AI-driven summarization, multi-source n
 - **Web Scraping**: Trafilatura for content extraction
 - **Audio Processing**: Google Cloud Text-to-Speech
 
-## Installation on Debian/Ubuntu
+## Installation
 
-### Automatic Installation
+### Quick Start (Recommended)
 
-1. **Download and run the installation script**:
+1. **Download and extract the project**:
    ```bash
-   wget https://raw.githubusercontent.com/your-repo/rss-reader/main/install.sh
-   chmod +x install.sh
-   ./install.sh
+   # If you have the deployment package
+   tar -xzf rss-reader-deployment.tar.gz
+   cd rss-reader-deployment
+   
+   # Or clone from GitHub
+   git clone [repository-url]
+   cd rss-reader
    ```
 
-2. **Set up your API key**:
+2. **Set up virtual environment and dependencies**:
    ```bash
-   cd ~/rss-reader
-   cp .env.example .env
-   nano .env  # Add your GEMINI_API_KEY
-   ```
-
-3. **Deploy the application files**:
-   ```bash
-   # If you have the source files
-   ./deploy.sh
-   ```
-
-### Manual Installation
-
-1. **Install system dependencies**:
-   ```bash
-   sudo apt update
-   sudo apt install -y python3.11 python3.11-pip python3.11-venv python3.11-dev
-   sudo apt install -y git curl wget build-essential
-   ```
-
-2. **Create project directory and virtual environment**:
-   ```bash
-   mkdir ~/rss-reader
-   cd ~/rss-reader
-   python3.11 -m venv venv
+   # Create virtual environment
+   python3 -m venv venv
    source venv/bin/activate
+   
+   # Install all required packages
+   pip install -r install-requirements.txt
    ```
 
-3. **Install Python dependencies**:
+3. **Start the application**:
    ```bash
-   pip install --upgrade pip
-   pip install streamlit==1.39.0 feedparser==6.0.11 google-genai==0.8.3
-   pip install google-cloud-texttospeech==2.17.2 pydub==0.25.1
-   pip install requests==2.32.3 trafilatura==1.12.2
+   chmod +x start.sh
+   ./start.sh
    ```
 
-4. **Copy application files** to `~/rss-reader/app/`
+### Manual Installation (if requirements file doesn't work)
+
+1. **Create virtual environment**:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install --upgrade pip
+   ```
+
+2. **Install dependencies individually**:
+   ```bash
+   pip install streamlit>=1.46.1
+   pip install feedparser>=6.0.11
+   pip install google-genai>=1.23.0
+   pip install google-cloud-texttospeech>=2.27.0
+   pip install pydub>=0.25.1
+   pip install requests>=2.32.4
+   pip install trafilatura>=2.0.0
+   ```
+
+3. **Start the application**:
+   ```bash
+   chmod +x start.sh
+   ./start.sh
+   ```
 
 ## Configuration
 
-### Environment Variables
+### API Key Setup
 
-Create a `.env` file in the project root:
+**No .env file needed!** The RSS Reader uses web-based configuration:
+
+1. Start the application: `./start.sh`
+2. Open browser to `http://localhost:5000` (or `http://your-server-ip:5000`)
+3. Go to "Settings" page
+4. Expand "Configure API Keys" 
+5. Enter your Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+6. Click "Save API Key"
+
+The API key is stored securely in the database and persists across sessions.
+
+### Optional: Environment Variables
+
+If you prefer using environment variables, create a `.env` file:
 
 ```bash
-# Required: Google Gemini API Key
+# Optional: Google Gemini API Key (can also be set via web interface)
 GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional: Custom port (default is 5000)
@@ -90,20 +109,11 @@ PORT=5000
 HOST=0.0.0.0
 ```
 
-### Getting API Keys
-
-1. **Google Gemini API Key**:
-   - Visit [Google AI Studio](https://aistudio.google.com/)
-   - Create a new API key
-   - Add it to your `.env` file
-
 ## Usage
 
 ### Starting the Application
 
 ```bash
-cd ~/rss-reader
-
 # Start on default port 5000
 ./start.sh
 
@@ -128,6 +138,8 @@ cd ~/rss-reader
 Once started, open your web browser and navigate to:
 - Local access: `http://localhost:5000`
 - Network access: `http://your-server-ip:5000`
+
+**Note**: If you see a directory listing instead of the RSS Reader, make sure you're accessing port 5000, not the default web port 80.
 
 ### Using the RSS Reader
 
@@ -178,24 +190,34 @@ sudo systemctl start rss-reader
 
 ### Common Issues
 
-1. **Port already in use**:
+1. **ModuleNotFoundError (trafilatura, streamlit, etc.)**:
+   ```bash
+   source venv/bin/activate
+   pip install -r install-requirements.txt
+   ```
+
+2. **Directory listing instead of RSS Reader**:
+   - Make sure you're accessing `http://your-server-ip:5000` (not port 80)
+   - The RSS Reader runs on port 5000, not the default web port
+
+3. **Port already in use**:
    ```bash
    ./start.sh --port 8080  # Use different port
    ```
 
-2. **Permission denied**:
+4. **Permission denied**:
    ```bash
    chmod +x start.sh stop.sh
    ```
 
-3. **Python not found**:
+5. **Virtual environment not found**:
    ```bash
-   sudo apt install python3.11 python3.11-pip
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r install-requirements.txt
    ```
 
-4. **Database errors**: The database is automatically created in the `data/` directory
-
-5. **Missing API key**: Check your `.env` file and ensure `GEMINI_API_KEY` is set
+6. **API key not working**: Configure via Settings page in web interface, not .env file
 
 ### Logs
 
