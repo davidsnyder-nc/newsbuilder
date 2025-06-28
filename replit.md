@@ -107,6 +107,8 @@ Key deployment considerations:
 - June 28, 2025: Updated settings page to only require single Gemini API key for both AI summarization and text-to-speech
 - June 28, 2025: Added copy-to-clipboard functionality for text summaries
 - June 28, 2025: Fixed UI duplication issues with audio generation controls
+- June 28, 2025: **COMPLETED CLEAN MATERIAL DESIGN INTERFACE** - Removed all emoji icons and decorative images throughout the application
+- June 28, 2025: **CREATED DEBIAN SERVER DEPLOYMENT PACKAGE** - Added automated installation scripts, startup/stop scripts, and comprehensive documentation for local server deployment
 
 ## Changelog
 

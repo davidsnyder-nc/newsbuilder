@@ -5,8 +5,14 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 class DatabaseManager:
-    def __init__(self, db_path: str = "rss_reader.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            # Create data directory if it doesn't exist
+            data_dir = os.path.join(os.getcwd(), "data")
+            os.makedirs(data_dir, exist_ok=True)
+            self.db_path = os.path.join(data_dir, "rss_reader.db")
+        else:
+            self.db_path = db_path
         self.init_database()
     
     def init_database(self):
