@@ -1,41 +1,30 @@
-import streamlit as st
 from typing import List, Dict
+from database import DatabaseManager
 
 class BookmarkManager:
     def __init__(self):
-        if 'bookmarks' not in st.session_state:
-            st.session_state.bookmarks = []
-        if 'bookmarked_links' not in st.session_state:
-            st.session_state.bookmarked_links = set()
+        self.db = DatabaseManager()
     
-    def add_bookmark(self, article: Dict):
+    def add_bookmark(self, article: Dict) -> bool:
         """Add an article to bookmarks"""
-        if article['link'] not in st.session_state.bookmarked_links:
-            st.session_state.bookmarks.append(article)
-            st.session_state.bookmarked_links.add(article['link'])
+        return self.db.add_bookmark(article)
     
     def remove_bookmark(self, link: str):
         """Remove an article from bookmarks by link"""
-        if link in st.session_state.bookmarked_links:
-            st.session_state.bookmarks = [
-                bookmark for bookmark in st.session_state.bookmarks 
-                if bookmark['link'] != link
-            ]
-            st.session_state.bookmarked_links.remove(link)
+        self.db.remove_bookmark(link)
     
     def is_bookmarked(self, link: str) -> bool:
         """Check if an article is bookmarked"""
-        return link in st.session_state.bookmarked_links
+        return self.db.is_bookmarked(link)
     
     def get_bookmarks(self) -> List[Dict]:
         """Get all bookmarked articles"""
-        return st.session_state.bookmarks
+        return self.db.get_bookmarks()
     
     def clear_bookmarks(self):
         """Clear all bookmarks"""
-        st.session_state.bookmarks = []
-        st.session_state.bookmarked_links = set()
+        self.db.clear_bookmarks()
     
     def get_bookmark_count(self) -> int:
         """Get the number of bookmarked articles"""
-        return len(st.session_state.bookmarks)
+        return self.db.get_bookmark_count()

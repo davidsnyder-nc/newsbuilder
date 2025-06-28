@@ -1,14 +1,11 @@
 import feedparser
-import streamlit as st
 from datetime import datetime
 from typing import Dict, List, Optional
+from database import DatabaseManager
 
 class RSSManager:
     def __init__(self):
-        if 'rss_feeds' not in st.session_state:
-            st.session_state.rss_feeds = {}
-        if 'rss_articles' not in st.session_state:
-            st.session_state.rss_articles = {}
+        self.db = DatabaseManager()
     
     def add_feed(self, name: str, url: str) -> bool:
         """Add a new RSS feed"""
@@ -18,23 +15,27 @@ class RSSManager:
             if feed.bozo and not feed.entries:
                 return False
             
-            st.session_state.rss_feeds[name] = url
-            self.refresh_feed(name, url)
-            return True
+            # Add to database
+            if self.db.add_rss_feed(name, url):
+                self.refresh_feed(name, url)
+                return True
+            return False
         except Exception as e:
-            st.error(f"Error adding feed: {str(e)}")
+            print(f"Error adding feed: {str(e)}")
             return False
     
     def remove_feed(self, name: str):
         """Remove an RSS feed"""
-        if name in st.session_state.rss_feeds:
-            del st.session_state.rss_feeds[name]
-        if name in st.session_state.rss_articles:
-            del st.session_state.rss_articles[name]
+        self.db.remove_rss_feed(name)
     
     def get_feeds(self) -> Dict[str, str]:
         """Get all RSS feeds"""
-        return st.session_state.rss_feeds
+        feeds = self.db.get_rss_feeds()
+        return {feed['name']: feed['url'] for feed in feeds}
+    
+    def get_feeds_detailed(self) -> List[Dict]:
+        """Get detailed feed information"""
+        return self.db.get_rss_feeds()
     
     def refresh_feed(self, name: str, url: str):
         """Refresh a single RSS feed"""
@@ -53,39 +54,23 @@ class RSSManager:
                 }
                 articles.append(article)
             
-            st.session_state.rss_articles[name] = articles
+            # Save articles to database
+            self.db.save_articles(name, articles)
+            self.db.update_feed_refresh_time(name)
             
         except Exception as e:
-            st.error(f"Error refreshing feed {name}: {str(e)}")
+            print(f"Error refreshing feed {name}: {str(e)}")
     
     def refresh_all_feeds(self):
         """Refresh all RSS feeds"""
-        for name, url in st.session_state.rss_feeds.items():
-            self.refresh_feed(name, url)
+        feeds = self.db.get_rss_feeds()
+        for feed in feeds:
+            self.refresh_feed(feed['name'], feed['url'])
     
     def get_articles(self, feed_name: str) -> List[Dict]:
         """Get articles from a specific feed"""
-        return st.session_state.rss_articles.get(feed_name, [])
+        return self.db.get_articles(feed_name)
     
     def get_all_articles(self) -> List[Dict]:
         """Get all articles from all feeds, sorted by publication date"""
-        all_articles = []
-        
-        for feed_name in st.session_state.rss_articles:
-            articles = st.session_state.rss_articles[feed_name]
-            all_articles.extend(articles)
-        
-        # Sort by published date (most recent first)
-        def get_sort_key(article):
-            try:
-                if article['published']:
-                    # Try to parse the date
-                    parsed = feedparser._parse_date(article['published'])
-                    if parsed:
-                        return datetime(*parsed[:6])
-                return datetime.min
-            except:
-                return datetime.min
-        
-        all_articles.sort(key=get_sort_key, reverse=True)
-        return all_articles
+        return self.db.get_articles()
