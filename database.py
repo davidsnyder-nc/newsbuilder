@@ -351,7 +351,7 @@ class DatabaseManager:
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT title, link, summary, published, feed_name, bookmarked_at
+            SELECT title, link, summary, published, feed_name, bookmarked_at, image_url
             FROM bookmarks
             ORDER BY bookmarked_at DESC
         ''')
@@ -367,7 +367,8 @@ class DatabaseManager:
                 'summary': row[2],
                 'published': row[3],
                 'feed_name': row[4],
-                'bookmarked_at': row[5]
+                'bookmarked_at': row[5],
+                'image_url': row[6]
             })
         
         return bookmarks

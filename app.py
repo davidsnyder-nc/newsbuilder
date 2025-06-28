@@ -134,10 +134,10 @@ if current_page == "articles":
                             is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                             
                             if is_bookmarked:
-                                if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                                if st.button("🔖 Bookmarked", key=f"bookmark_img_{article['link']}", disabled=True):
                                     pass
                             else:
-                                if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
+                                if st.button("📌 Bookmark", key=f"bookmark_img_{article['link']}"):
                                     if bookmark_manager.add_bookmark(article):
                                         st.success("Article bookmarked!")
                                         st.rerun()
@@ -160,29 +160,15 @@ if current_page == "articles":
                             is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                             
                             if is_bookmarked:
-                                if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                                if st.button("🔖 Bookmarked", key=f"bookmark_txt_{article['link']}", disabled=True):
                                     pass
                             else:
-                                if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
+                                if st.button("📌 Bookmark", key=f"bookmark_txt_{article['link']}"):
                                     if bookmark_manager.add_bookmark(article):
                                         st.success("Article bookmarked!")
                                         st.rerun()
                                     else:
                                         st.error("Failed to bookmark article")
-                    
-                    with col2:
-                        is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
-                        
-                        if is_bookmarked:
-                            if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
-                                pass
-                        else:
-                            if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
-                                if bookmark_manager.add_bookmark(article):
-                                    st.success("Article bookmarked!")
-                                    st.rerun()
-                                else:
-                                    st.error("Failed to bookmark article")
                 
                 st.divider()
 
@@ -270,23 +256,49 @@ elif current_page == "bookmarks":
         # Display bookmarks
         for bookmark in bookmarks:
             with st.container():
-                col1, col2 = st.columns([5, 1])
-                
-                with col1:
-                    st.subheader(bookmark['title'])
-                    st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                # Check if bookmark has an image
+                if bookmark.get('image_url'):
+                    col1, col2, col3 = st.columns([1.5, 3.5, 1])
                     
-                    if bookmark['summary']:
-                        st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
+                    with col1:
+                        try:
+                            st.image(bookmark['image_url'], width=150, use_column_width=False)
+                        except:
+                            pass  # Skip if image fails to load
                     
-                    if bookmark['link']:
-                        st.link_button("🔗 Read Full Article", bookmark['link'])
-                
-                with col2:
-                    if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
-                        bookmark_manager.remove_bookmark(bookmark['link'])
-                        st.success("Bookmark removed!")
-                        st.rerun()
+                    with col2:
+                        st.subheader(bookmark['title'])
+                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                        
+                        if bookmark['summary']:
+                            st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
+                        
+                        if bookmark['link']:
+                            st.link_button("🔗 Read Full Article", bookmark['link'])
+                    
+                    with col3:
+                        if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                            bookmark_manager.remove_bookmark(bookmark['link'])
+                            st.success("Bookmark removed!")
+                            st.rerun()
+                else:
+                    col1, col2 = st.columns([5, 1])
+                    
+                    with col1:
+                        st.subheader(bookmark['title'])
+                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                        
+                        if bookmark['summary']:
+                            st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
+                        
+                        if bookmark['link']:
+                            st.link_button("🔗 Read Full Article", bookmark['link'])
+                    
+                    with col2:
+                        if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                            bookmark_manager.remove_bookmark(bookmark['link'])
+                            st.success("Bookmark removed!")
+                            st.rerun()
             
             st.divider()
 
