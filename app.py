@@ -198,7 +198,7 @@ elif current_page == "feeds":
             st.divider()
 
 elif current_page == "bookmarks":
-    st.title("🔖 Bookmarked Articles")
+    st.markdown(f'<h1>{svg_icon_html("bookmark", 32)} Bookmarked Articles</h1>', unsafe_allow_html=True)
     
     bookmarks = bookmark_manager.get_bookmarks()
     
@@ -208,11 +208,11 @@ elif current_page == "bookmarks":
         # Actions section
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button("📝 Generate Combined Summary", type="primary", use_container_width=True):
+            if st.button(f"{svg_icon_html('summary', 16)} Generate Combined Summary", type="primary", use_container_width=True):
                 st.query_params["page"] = "summary"
                 st.rerun()
         with col2:
-            if st.button("🗑️ Clear All Bookmarks", use_container_width=True):
+            if st.button(f"{svg_icon_html('delete', 16)} Clear All Bookmarks", use_container_width=True):
                 bookmark_manager.clear_bookmarks()
                 st.success("All bookmarks cleared!")
                 st.rerun()
@@ -226,16 +226,16 @@ elif current_page == "bookmarks":
                 
                 with col1:
                     st.subheader(bookmark['title'])
-                    st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                    st.caption(f"{svg_icon_html('source', 14)} {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
                     
                     if bookmark['summary']:
                         st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
                     
                     if bookmark['link']:
-                        st.link_button("🔗 Read Full Article", bookmark['link'])
+                        st.link_button(f"{svg_icon_html('link', 16)} Read Full Article", bookmark['link'])
                 
                 with col2:
-                    if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                    if st.button(f"{svg_icon_html('delete', 16)} Remove", key=f"remove_bookmark_{bookmark['link']}"):
                         bookmark_manager.remove_bookmark(bookmark['link'])
                         st.success("Bookmark removed!")
                         st.rerun()
@@ -243,7 +243,7 @@ elif current_page == "bookmarks":
             st.divider()
 
 elif current_page == "summary":
-    st.title("📄 Combined Summary")
+    st.markdown(f'<h1>{svg_icon_html("summary", 32)} Combined Summary</h1>', unsafe_allow_html=True)
     
     bookmarks = bookmark_manager.get_bookmarks()
     
@@ -257,7 +257,7 @@ elif current_page == "summary":
             st.session_state.combined_summary = None
         
         # Generate summary button
-        if st.button("🤖 Generate AI Summary", type="primary"):
+        if st.button(f"{svg_icon_html('ai', 16)} Generate AI Summary", type="primary"):
             with st.spinner("Fetching full articles and generating summary..."):
                 try:
                     # Progress tracking
@@ -304,7 +304,7 @@ elif current_page == "summary":
         if st.session_state.combined_summary:
             st.success("Summary generated successfully!")
             
-            st.subheader("📝 Generated Summary")
+            st.markdown(f'<h3>{svg_icon_html("summary", 24)} Generated Summary</h3>', unsafe_allow_html=True)
             
             # Text display with copy functionality
             st.text_area(
@@ -316,19 +316,19 @@ elif current_page == "summary":
             
             # Download as text
             st.download_button(
-                label="📥 Download as Text",
+                label=f"{svg_icon_html('download', 16)} Download as Text",
                 data=st.session_state.combined_summary,
                 file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                 mime="text/plain"
             )
             
             # Audio generation section
-            st.subheader("🔊 Audio Options")
+            st.markdown(f'<h3>{svg_icon_html("audio", 24)} Audio Options</h3>', unsafe_allow_html=True)
             
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("🎵 Generate Audio", use_container_width=True):
+                if st.button(f"{svg_icon_html('audio', 16)} Generate Audio", use_container_width=True):
                     with st.spinner("Converting text to speech..."):
                         try:
                             audio_file = audio_processor.text_to_speech(st.session_state.combined_summary)
