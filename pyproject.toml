@@ -1,0 +1,16 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "feedparser>=6.0.11",
+    "google-cloud-texttospeech>=2.27.0",
+    "google-genai>=1.23.0",
+    "openai>=1.93.0",
+    "pydub>=0.25.1",
+    "requests>=2.32.4",
+    "sift-stack-py>=0.7.0",
+    "streamlit>=1.46.1",
+    "trafilatura>=2.0.0",
+]
