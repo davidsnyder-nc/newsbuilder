@@ -110,17 +110,65 @@ if current_page == "articles":
             # Display articles
             for article in filtered_articles[:articles_per_page]:
                 with st.container():
-                    col1, col2 = st.columns([5, 1])
-                    
-                    with col1:
-                        st.subheader(article['title'])
-                        st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                    # Check if article has an image
+                    if article.get('image_url'):
+                        col1, col2, col3 = st.columns([1.5, 3.5, 1])
                         
-                        if article['summary']:
-                            st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
+                        with col1:
+                            try:
+                                st.image(article['image_url'], width=150, use_column_width=False)
+                            except:
+                                pass  # Skip if image fails to load
                         
-                        if article['link']:
-                            st.link_button("🔗 Read Full Article", article['link'])
+                        with col2:
+                            st.subheader(article['title'])
+                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                            
+                            if article['summary']:
+                                st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
+                            
+                            if article['link']:
+                                st.link_button("🔗 Read Full Article", article['link'])
+                        
+                        with col3:
+                            is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
+                            
+                            if is_bookmarked:
+                                if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                                    pass
+                            else:
+                                if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
+                                    if bookmark_manager.add_bookmark(article):
+                                        st.success("Article bookmarked!")
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to bookmark article")
+                    else:
+                        col1, col2 = st.columns([5, 1])
+                        
+                        with col1:
+                            st.subheader(article['title'])
+                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                            
+                            if article['summary']:
+                                st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
+                            
+                            if article['link']:
+                                st.link_button("🔗 Read Full Article", article['link'])
+                        
+                        with col2:
+                            is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
+                            
+                            if is_bookmarked:
+                                if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                                    pass
+                            else:
+                                if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
+                                    if bookmark_manager.add_bookmark(article):
+                                        st.success("Article bookmarked!")
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to bookmark article")
                     
                     with col2:
                         is_bookmarked = bookmark_manager.is_bookmarked(article['link'])

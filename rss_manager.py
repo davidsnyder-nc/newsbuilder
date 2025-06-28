@@ -44,13 +44,46 @@ class RSSManager:
             articles = []
             
             for entry in feed.entries:
+                # Extract image URLs from various RSS fields
+                image_url = None
+                
+                # Try to get image from media:content
+                if hasattr(entry, 'media_content') and entry.media_content:
+                    for media in entry.media_content:
+                        if media.get('medium') == 'image' or 'image' in media.get('type', ''):
+                            image_url = media.get('url')
+                            break
+                
+                # Try to get image from enclosures
+                if not image_url and hasattr(entry, 'enclosures'):
+                    for enclosure in entry.enclosures:
+                        if enclosure.type and 'image' in enclosure.type:
+                            image_url = enclosure.href
+                            break
+                
+                # Try to get image from media:thumbnail
+                if not image_url and hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
+                    image_url = entry.media_thumbnail[0].get('url')
+                
+                # Try to extract image from content or summary using basic regex
+                if not image_url:
+                    import re
+                    content_to_search = entry.get('content', [{}])[0].get('value', '') if entry.get('content') else ''
+                    content_to_search += ' ' + entry.get('summary', '')
+                    
+                    # Look for img tags
+                    img_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', content_to_search)
+                    if img_match:
+                        image_url = img_match.group(1)
+                
                 article = {
                     'title': entry.get('title', 'No Title'),
                     'link': entry.get('link', ''),
                     'summary': entry.get('summary', ''),
                     'published': entry.get('published', ''),
                     'feed_name': name,
-                    'guid': entry.get('guid', entry.get('link', ''))
+                    'guid': entry.get('guid', entry.get('link', '')),
+                    'image_url': image_url
                 }
                 articles.append(article)
             

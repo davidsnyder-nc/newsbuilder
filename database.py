@@ -45,10 +45,17 @@ class DatabaseManager:
                 summary TEXT,
                 published TEXT,
                 guid TEXT,
+                image_url TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (feed_id) REFERENCES rss_feeds (id)
             )
         ''')
+        
+        # Add image_url column if it doesn't exist (for existing databases)
+        try:
+            cursor.execute('ALTER TABLE articles ADD COLUMN image_url TEXT')
+        except:
+            pass  # Column already exists
         
         # Bookmarks table
         cursor.execute('''
@@ -59,9 +66,16 @@ class DatabaseManager:
                 summary TEXT,
                 published TEXT,
                 feed_name TEXT,
+                image_url TEXT,
                 bookmarked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        
+        # Add image_url column to bookmarks if it doesn't exist
+        try:
+            cursor.execute('ALTER TABLE bookmarks ADD COLUMN image_url TEXT')
+        except:
+            pass  # Column already exists
         
         conn.commit()
         conn.close()
@@ -229,15 +243,16 @@ class DatabaseManager:
         for article in articles:
             try:
                 cursor.execute('''
-                    INSERT INTO articles (feed_id, title, link, summary, published, guid)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO articles (feed_id, title, link, summary, published, guid, image_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     feed_id,
                     article.get('title', ''),
                     article.get('link', ''),
                     article.get('summary', ''),
                     article.get('published', ''),
-                    article.get('guid', '')
+                    article.get('guid', ''),
+                    article.get('image_url', None)
                 ))
             except sqlite3.IntegrityError:
                 # Skip duplicate articles
@@ -253,7 +268,7 @@ class DatabaseManager:
         
         if feed_name:
             cursor.execute('''
-                SELECT a.title, a.link, a.summary, a.published, a.guid, f.name as feed_name
+                SELECT a.title, a.link, a.summary, a.published, a.guid, f.name as feed_name, a.image_url
                 FROM articles a
                 JOIN rss_feeds f ON a.feed_id = f.id
                 WHERE f.name = ?
@@ -261,7 +276,7 @@ class DatabaseManager:
             ''', (feed_name,))
         else:
             cursor.execute('''
-                SELECT a.title, a.link, a.summary, a.published, a.guid, f.name as feed_name
+                SELECT a.title, a.link, a.summary, a.published, a.guid, f.name as feed_name, a.image_url
                 FROM articles a
                 JOIN rss_feeds f ON a.feed_id = f.id
                 ORDER BY a.created_at DESC
@@ -278,7 +293,8 @@ class DatabaseManager:
                 'summary': row[2],
                 'published': row[3],
                 'guid': row[4],
-                'feed_name': row[5]
+                'feed_name': row[5],
+                'image_url': row[6]
             })
         
         return articles
@@ -291,14 +307,15 @@ class DatabaseManager:
             cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT INTO bookmarks (title, link, summary, published, feed_name)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO bookmarks (title, link, summary, published, feed_name, image_url)
+                VALUES (?, ?, ?, ?, ?, ?)
             ''', (
                 article.get('title', ''),
                 article.get('link', ''),
                 article.get('summary', ''),
                 article.get('published', ''),
-                article.get('feed_name', '')
+                article.get('feed_name', ''),
+                article.get('image_url', None)
             ))
             
             conn.commit()
