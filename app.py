@@ -67,7 +67,7 @@ st.sidebar.metric("RSS Feeds", feeds_count)
 st.sidebar.metric("Bookmarks", bookmarks_count)
 
 if feeds_count > 0:
-    if st.sidebar.button("🔄 Refresh All Feeds", use_container_width=True):
+    if st.sidebar.button(f"{svg_icon_html('refresh', 16)} Refresh All Feeds", use_container_width=True):
         with st.spinner("Refreshing feeds..."):
             rss_manager.refresh_all_feeds()
         st.success("Feeds refreshed!")
@@ -75,7 +75,7 @@ if feeds_count > 0:
 
 # Page content
 if current_page == "articles":
-    st.title("📖 RSS Articles")
+    st.markdown(f'<h1>{svg_icon_html("articles", 32)} RSS Articles</h1>', unsafe_allow_html=True)
     
     feeds = rss_manager.get_feeds()
     
@@ -114,22 +114,22 @@ if current_page == "articles":
                     
                     with col1:
                         st.subheader(article['title'])
-                        st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                        st.caption(f"{svg_icon_html('source', 14)} {article['feed_name']} • {article.get('published', 'No date')}")
                         
                         if article['summary']:
                             st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
                         
                         if article['link']:
-                            st.link_button("🔗 Read Full Article", article['link'])
+                            st.link_button(f"{svg_icon_html('link', 16)} Read Full Article", article['link'])
                     
                     with col2:
                         is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                         
                         if is_bookmarked:
-                            if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                            if st.button(f"{svg_icon_html('bookmark_filled', 16)} Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
                                 pass
                         else:
-                            if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
+                            if st.button(f"{svg_icon_html('bookmark', 16)} Bookmark", key=f"bookmark_{article['link']}"):
                                 if bookmark_manager.add_bookmark(article):
                                     st.success("Article bookmarked!")
                                     st.rerun()
@@ -139,10 +139,10 @@ if current_page == "articles":
                 st.divider()
 
 elif current_page == "feeds":
-    st.title("📊 RSS Feed Management")
+    st.markdown(f'<h1>{svg_icon_html("feeds", 32)} RSS Feed Management</h1>', unsafe_allow_html=True)
     
     # Add new feed section
-    with st.expander("➕ Add New RSS Feed", expanded=True):
+    with st.expander(f"{svg_icon_html('add', 16)} Add New RSS Feed", expanded=True):
         col1, col2, col3 = st.columns([2, 2, 1])
         
         with col1:
@@ -164,7 +164,7 @@ elif current_page == "feeds":
                     st.error("Please provide both name and URL")
     
     # Display current feeds
-    st.subheader("📡 Current RSS Feeds")
+    st.markdown(f'<h3>{svg_icon_html("feeds", 24)} Current RSS Feeds</h3>', unsafe_allow_html=True)
     
     feeds = rss_manager.get_feeds_detailed()
     
@@ -190,7 +190,7 @@ elif current_page == "feeds":
                         st.caption("Never refreshed")
                 
                 with col4:
-                    if st.button("🗑️", key=f"delete_{feed['name']}", help="Delete feed"):
+                    if st.button(f"{svg_icon_html('delete', 16)}", key=f"delete_{feed['name']}", help="Delete feed"):
                         rss_manager.remove_feed(feed['name'])
                         st.success(f"Deleted feed: {feed['name']}")
                         st.rerun()
