@@ -328,7 +328,7 @@ elif current_page == "feeds":
                         st.caption("Never refreshed")
                 
                 with col4:
-                    if st.button("🗑️", key=f"delete_{feed['name']}", help="Delete feed"):
+                    if st.button("Delete", key=f"delete_{feed['name']}", help="Delete feed"):
                         rss_manager.remove_feed(feed['name'])
                         st.success(f"Deleted feed: {feed['name']}")
                         st.rerun()
@@ -346,11 +346,11 @@ elif current_page == "bookmarks":
         # Actions section
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button("📝 Generate Combined Summary", type="primary", use_container_width=True):
+            if st.button("Generate Combined Summary", type="primary", use_container_width=True):
                 st.query_params["page"] = "summary"
                 st.rerun()
         with col2:
-            if st.button("🗑️ Clear All Bookmarks", use_container_width=True):
+            if st.button("Clear All Bookmarks", use_container_width=True):
                 bookmark_manager.clear_bookmarks()
                 st.success("All bookmarks cleared!")
                 st.rerun()
@@ -383,7 +383,7 @@ elif current_page == "bookmarks":
                             st.link_button("Read", bookmark['link'], help="Read Full Article")
                     
                     with col4:
-                        if st.button("🗑️", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
+                        if st.button("Remove", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
                             bookmark_manager.remove_bookmark(bookmark['link'])
                             st.success("Removed!")
                             st.rerun()
@@ -400,10 +400,10 @@ elif current_page == "bookmarks":
                     
                     with col2:
                         if bookmark['link']:
-                            st.link_button("🔗", bookmark['link'], help="Read Full Article")
+                            st.link_button("Read", bookmark['link'], help="Read Full Article")
                     
                     with col3:
-                        if st.button("🗑️", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
+                        if st.button("Remove", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
                             bookmark_manager.remove_bookmark(bookmark['link'])
                             st.success("Removed!")
                             st.rerun()
@@ -697,8 +697,8 @@ elif current_page == "settings":
                     st.metric(key, value)
         
         with col2:
-            st.warning("⚠️ Danger Zone")
-            if st.button("🗑️ Clear All Data", use_container_width=True):
+            st.warning("Danger Zone")
+            if st.button("Clear All Data", use_container_width=True):
                 if st.button("⚠️ Confirm Delete All", type="secondary"):
                     # This would need implementation
                     st.error("This feature is not yet implemented for safety")
