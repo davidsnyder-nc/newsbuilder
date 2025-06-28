@@ -25,11 +25,9 @@ sudo apt install -y python3.11 python3.11-pip python3.11-venv python3.11-dev
 echo "🔧 Installing system dependencies..."
 sudo apt install -y git curl wget build-essential
 
-# Create project directory
-PROJECT_DIR="$HOME/rss-reader"
-echo "📁 Creating project directory at $PROJECT_DIR..."
-mkdir -p "$PROJECT_DIR"
-cd "$PROJECT_DIR"
+# Use current directory as project directory
+PROJECT_DIR="$(pwd)"
+echo "📁 Using current directory as project directory: $PROJECT_DIR..."
 
 # Create virtual environment
 echo "🏠 Creating Python virtual environment..."
@@ -50,9 +48,8 @@ pip install pydub==0.25.1
 pip install requests==2.32.3
 pip install trafilatura==1.12.2
 
-# Create application files directory
-echo "📋 Creating application structure..."
-mkdir -p app
+# Create data and logs directories
+echo "📋 Creating data structure..."
 mkdir -p data
 mkdir -p logs
 
@@ -134,7 +131,7 @@ if [ -z "$GEMINI_API_KEY" ]; then
 fi
 
 # Start the Streamlit application
-streamlit run app/app.py --server.port=$FINAL_PORT --server.address=$FINAL_HOST --server.headless=true
+streamlit run app.py --server.port=$FINAL_PORT --server.address=$FINAL_HOST --server.headless=true
 EOF
 
 chmod +x start.sh
@@ -146,7 +143,7 @@ cat > stop.sh << 'EOF'
 echo "Stopping RSS Reader..."
 
 # Find and kill any running streamlit processes for this app
-pkill -f "streamlit run app/app.py" || echo "No running RSS Reader processes found"
+pkill -f "streamlit run app.py" || echo "No running RSS Reader processes found"
 
 echo "RSS Reader stopped."
 EOF
@@ -156,10 +153,11 @@ chmod +x stop.sh
 echo "✅ Installation completed successfully!"
 echo ""
 echo "📋 Next steps:"
-echo "1. Copy your application files to: $PROJECT_DIR/app/"
-echo "2. Set up your Gemini API key:"
-echo "   cp .env.example .env"
-echo "   nano .env  # Edit and add your GEMINI_API_KEY"
+echo "1. Your application files are already in place"
+echo "2. Configure your Gemini API key through the web interface:"
+echo "   - Go to Settings page"
+echo "   - Expand 'Configure API Keys'"
+echo "   - Enter your API key and save"
 echo ""
 echo "🚀 To start the application:"
 echo "   cd $PROJECT_DIR"
