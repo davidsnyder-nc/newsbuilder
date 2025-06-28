@@ -114,7 +114,7 @@ if current_page == "articles":
                     
                     with col1:
                         st.subheader(article['title'])
-                        st.caption(f"{svg_icon_html('source', 14)} {article['feed_name']} • {article.get('published', 'No date')}")
+                        st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
                         
                         if article['summary']:
                             st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
@@ -226,7 +226,7 @@ elif current_page == "bookmarks":
                 
                 with col1:
                     st.subheader(bookmark['title'])
-                    st.caption(f"{svg_icon_html('source', 14)} {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                    st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
                     
                     if bookmark['summary']:
                         st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
@@ -316,7 +316,7 @@ elif current_page == "summary":
             
             # Download as text
             st.download_button(
-                label=f"{svg_icon_html('download', 16)} Download as Text",
+                label="📥 Download as Text",
                 data=st.session_state.combined_summary,
                 file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                 mime="text/plain"
@@ -328,7 +328,7 @@ elif current_page == "summary":
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button(f"{svg_icon_html('audio', 16)} Generate Audio", use_container_width=True):
+                if st.button("🎵 Generate Audio", use_container_width=True):
                     with st.spinner("Converting text to speech..."):
                         try:
                             audio_file = audio_processor.text_to_speech(st.session_state.combined_summary)
@@ -354,7 +354,7 @@ elif current_page == "summary":
                         with open(st.session_state.audio_file, 'rb') as f:
                             audio_data = f.read()
                         st.download_button(
-                            label=f"{svg_icon_html('download', 16)} Download MP3",
+                            label="📥 Download MP3",
                             data=audio_data,
                             file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp3",
                             mime="audio/mp3",
@@ -392,7 +392,7 @@ elif current_page == "settings":
             help="Get your API key from https://platform.openai.com"
         )
         
-        if st.button(f"{svg_icon_html('save', 16)} Save API Keys", type="primary"):
+        if st.button("💾 Save API Keys", type="primary"):
             if gemini_key and not gemini_key.startswith("*"):
                 db.save_setting("GEMINI_API_KEY", gemini_key)
                 os.environ["GEMINI_API_KEY"] = gemini_key
@@ -419,11 +419,11 @@ elif current_page == "settings":
             help="Choose between Gemini and OpenAI for article summarization"
         )
         
-        if st.button(f"{svg_icon_html('save', 16)} Save AI Settings"):
+        if st.button("💾 Save AI Settings"):
             db.save_setting("ai_service", selected_ai_service)
             st.success("AI service settings saved! Restart may be needed for changes to take effect.")
     
-    with st.expander(f"{svg_icon_html('audio', 16)} Audio Settings", expanded=True):
+    with st.expander("🔊 Audio Settings", expanded=True):
         # Voice selection for TTS
         voice_options = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
         current_voice = db.get_setting("tts_voice", "alloy")
@@ -443,7 +443,7 @@ elif current_page == "settings":
             step=0.1
         )
         
-        if st.button(f"{svg_icon_html('save', 16)} Save Audio Settings"):
+        if st.button("💾 Save Audio Settings"):
             db.save_setting("tts_voice", selected_voice)
             db.save_setting("speaking_rate", speaking_rate)
             st.success("Audio settings saved!")
