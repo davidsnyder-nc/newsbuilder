@@ -147,7 +147,7 @@ if current_page == "articles":
                         
                         with col1:
                             try:
-                                st.image(article['image_url'], width=80)
+                                st.image(article['image_url'], width=120)
                             except:
                                 pass  # Skip if image fails to load
                         
@@ -297,7 +297,7 @@ elif current_page == "bookmarks":
                     
                     with col1:
                         try:
-                            st.image(bookmark['image_url'], width=80)
+                            st.image(bookmark['image_url'], width=120)
                         except:
                             pass  # Skip if image fails to load
                     
