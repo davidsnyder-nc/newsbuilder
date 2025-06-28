@@ -102,8 +102,11 @@ Key deployment considerations:
 - June 28, 2025: Restructured application into multi-page interface with separate pages for RSS feeds, bookmarks, summary generation, and settings
 - June 28, 2025: Implemented SQLite database for persistent storage of RSS feeds, articles, bookmarks, and user settings
 - June 28, 2025: Enhanced AI summarization with improved text sanitization for optimal text-to-speech conversion
-- June 28, 2025: Added OpenAI TTS as primary audio service with fallback to Google Cloud TTS
-- June 28, 2025: Settings page now allows users to input and persist API keys across browser sessions
+- June 28, 2025: **REMOVED ALL OPENAI DEPENDENCIES** - System now uses only Gemini and Google services per user requirements
+- June 28, 2025: Configured Google Cloud TTS to use Gemini API key for authentication, eliminating need for separate Google Cloud credentials
+- June 28, 2025: Updated settings page to only require single Gemini API key for both AI summarization and text-to-speech
+- June 28, 2025: Added copy-to-clipboard functionality for text summaries
+- June 28, 2025: Fixed UI duplication issues with audio generation controls
 
 ## Changelog
 
