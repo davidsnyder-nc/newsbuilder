@@ -73,8 +73,14 @@ class AudioProcessor:
         """Synthesize a single chunk of text using Google TTS REST API"""
         try:
             # Get voice settings from database
-            voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-J")
+            voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-H")
             speaking_rate = self.db.get_setting("speaking_rate", 1.0)
+            
+            # Determine gender based on voice name
+            if voice_name in ["en-US-Neural2-I", "en-US-Neural2-D"]:
+                voice_gender = "MALE"
+            else:
+                voice_gender = "FEMALE"
             
             # Google Cloud TTS REST API endpoint
             url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={self.api_key}"
@@ -87,7 +93,7 @@ class AudioProcessor:
                 "voice": {
                     "languageCode": "en-US",
                     "name": voice_name,
-                    "ssmlGender": "NEUTRAL"
+                    "ssmlGender": voice_gender
                 },
                 "audioConfig": {
                     "audioEncoding": "MP3",

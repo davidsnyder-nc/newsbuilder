@@ -516,14 +516,14 @@ elif current_page == "settings":
     with st.expander("🔊 Audio Settings", expanded=True):
         # Google TTS Voice selection
         voice_options = [
-            ("en-US-Neural2-J", "Neural2-J (Neutral)"),
             ("en-US-Neural2-H", "Neural2-H (Female)"), 
             ("en-US-Neural2-I", "Neural2-I (Male)"),
             ("en-US-Neural2-A", "Neural2-A (Female)"),
             ("en-US-Neural2-C", "Neural2-C (Female)"),
-            ("en-US-Neural2-D", "Neural2-D (Male)")
+            ("en-US-Neural2-D", "Neural2-D (Male)"),
+            ("en-US-Neural2-F", "Neural2-F (Female)")
         ]
-        current_voice = db.get_setting("tts_voice", "en-US-Neural2-J")
+        current_voice = db.get_setting("tts_voice", "en-US-Neural2-H")
         
         voice_labels = [label for _, label in voice_options]
         voice_values = [value for value, _ in voice_options]
