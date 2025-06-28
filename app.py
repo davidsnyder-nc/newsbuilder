@@ -17,6 +17,37 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS for compact layout
+st.markdown("""
+<style>
+    .stButton button {
+        height: 2rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .element-container {
+        margin-bottom: 0.5rem;
+    }
+    
+    .stMarkdown p {
+        margin-bottom: 0.25rem;
+    }
+    
+    .stCaption {
+        margin-bottom: 0.25rem;
+    }
+    
+    [data-testid="stImage"] {
+        margin-bottom: 0;
+    }
+    
+    .streamlit-container {
+        padding-top: 1rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Initialize database and managers
 @st.cache_resource
 def get_managers():
@@ -112,65 +143,69 @@ if current_page == "articles":
                 with st.container():
                     # Check if article has an image
                     if article.get('image_url'):
-                        col1, col2, col3 = st.columns([1.5, 3.5, 1])
+                        col1, col2, col3, col4 = st.columns([1, 4, 1, 1])
                         
                         with col1:
                             try:
-                                st.image(article['image_url'], width=150)
+                                st.image(article['image_url'], width=80)
                             except:
                                 pass  # Skip if image fails to load
                         
                         with col2:
-                            st.subheader(article['title'])
+                            st.markdown(f"**{article['title']}**")
                             st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
                             
                             if article['summary']:
-                                st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
-                            
+                                summary_text = article['summary'][:120] + "..." if len(article['summary']) > 120 else article['summary']
+                                st.markdown(f"<small>{summary_text}</small>", unsafe_allow_html=True)
+                        
+                        with col3:
                             if article['link']:
-                                st.link_button("🔗 Read Full Article", article['link'])
+                                st.link_button("🔗", article['link'], help="Read Full Article")
+                        
+                        with col4:
+                            is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
+                            
+                            if is_bookmarked:
+                                if st.button("🔖", key=f"bookmark_img_{article['link']}", disabled=True, help="Bookmarked"):
+                                    pass
+                            else:
+                                if st.button("📌", key=f"bookmark_img_{article['link']}", help="Bookmark"):
+                                    if bookmark_manager.add_bookmark(article):
+                                        st.success("Bookmarked!")
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to bookmark")
+                    else:
+                        col1, col2, col3 = st.columns([5, 1, 1])
+                        
+                        with col1:
+                            st.markdown(f"**{article['title']}**")
+                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
+                            
+                            if article['summary']:
+                                summary_text = article['summary'][:150] + "..." if len(article['summary']) > 150 else article['summary']
+                                st.markdown(f"<small>{summary_text}</small>", unsafe_allow_html=True)
+                        
+                        with col2:
+                            if article['link']:
+                                st.link_button("🔗", article['link'], help="Read Full Article")
                         
                         with col3:
                             is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                             
                             if is_bookmarked:
-                                if st.button("🔖 Bookmarked", key=f"bookmark_img_{article['link']}", disabled=True):
+                                if st.button("🔖", key=f"bookmark_txt_{article['link']}", disabled=True, help="Bookmarked"):
                                     pass
                             else:
-                                if st.button("📌 Bookmark", key=f"bookmark_img_{article['link']}"):
+                                if st.button("📌", key=f"bookmark_txt_{article['link']}", help="Bookmark"):
                                     if bookmark_manager.add_bookmark(article):
-                                        st.success("Article bookmarked!")
+                                        st.success("Bookmarked!")
                                         st.rerun()
                                     else:
-                                        st.error("Failed to bookmark article")
-                    else:
-                        col1, col2 = st.columns([5, 1])
-                        
-                        with col1:
-                            st.subheader(article['title'])
-                            st.caption(f"📡 {article['feed_name']} • {article.get('published', 'No date')}")
-                            
-                            if article['summary']:
-                                st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
-                            
-                            if article['link']:
-                                st.link_button("🔗 Read Full Article", article['link'])
-                        
-                        with col2:
-                            is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
-                            
-                            if is_bookmarked:
-                                if st.button("🔖 Bookmarked", key=f"bookmark_txt_{article['link']}", disabled=True):
-                                    pass
-                            else:
-                                if st.button("📌 Bookmark", key=f"bookmark_txt_{article['link']}"):
-                                    if bookmark_manager.add_bookmark(article):
-                                        st.success("Article bookmarked!")
-                                        st.rerun()
-                                    else:
-                                        st.error("Failed to bookmark article")
+                                        st.error("Failed to bookmark")
                 
-                st.divider()
+                st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
 
 elif current_page == "feeds":
     st.markdown(f'<h1>{svg_icon_html("feeds", 32)} RSS Feed Management</h1>', unsafe_allow_html=True)
@@ -258,49 +293,53 @@ elif current_page == "bookmarks":
             with st.container():
                 # Check if bookmark has an image
                 if bookmark.get('image_url'):
-                    col1, col2, col3 = st.columns([1.5, 3.5, 1])
+                    col1, col2, col3, col4 = st.columns([1, 4, 1, 1])
                     
                     with col1:
                         try:
-                            st.image(bookmark['image_url'], width=150)
+                            st.image(bookmark['image_url'], width=80)
                         except:
                             pass  # Skip if image fails to load
                     
                     with col2:
-                        st.subheader(bookmark['title'])
-                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                        st.markdown(f"**{bookmark['title']}**")
+                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
                         
                         if bookmark['summary']:
-                            st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
-                        
-                        if bookmark['link']:
-                            st.link_button("🔗 Read Full Article", bookmark['link'])
+                            summary_text = bookmark['summary'][:120] + "..." if len(bookmark['summary']) > 120 else bookmark['summary']
+                            st.markdown(f"<small>{summary_text}</small>", unsafe_allow_html=True)
                     
                     with col3:
-                        if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                        if bookmark['link']:
+                            st.link_button("🔗", bookmark['link'], help="Read Full Article")
+                    
+                    with col4:
+                        if st.button("🗑️", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
                             bookmark_manager.remove_bookmark(bookmark['link'])
-                            st.success("Bookmark removed!")
+                            st.success("Removed!")
                             st.rerun()
                 else:
-                    col1, col2 = st.columns([5, 1])
+                    col1, col2, col3 = st.columns([5, 1, 1])
                     
                     with col1:
-                        st.subheader(bookmark['title'])
-                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:19]}")
+                        st.markdown(f"**{bookmark['title']}**")
+                        st.caption(f"📡 {bookmark['feed_name']} • Bookmarked: {bookmark['bookmarked_at'][:16]}")
                         
                         if bookmark['summary']:
-                            st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
-                        
-                        if bookmark['link']:
-                            st.link_button("🔗 Read Full Article", bookmark['link'])
+                            summary_text = bookmark['summary'][:150] + "..." if len(bookmark['summary']) > 150 else bookmark['summary']
+                            st.markdown(f"<small>{summary_text}</small>", unsafe_allow_html=True)
                     
                     with col2:
-                        if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                        if bookmark['link']:
+                            st.link_button("🔗", bookmark['link'], help="Read Full Article")
+                    
+                    with col3:
+                        if st.button("🗑️", key=f"remove_bookmark_{bookmark['link']}", help="Remove Bookmark"):
                             bookmark_manager.remove_bookmark(bookmark['link'])
-                            st.success("Bookmark removed!")
+                            st.success("Removed!")
                             st.rerun()
             
-            st.divider()
+            st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
 
 elif current_page == "summary":
     st.markdown(f'<h1>{svg_icon_html("summary", 32)} Combined Summary</h1>', unsafe_allow_html=True)
