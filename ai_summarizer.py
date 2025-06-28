@@ -16,8 +16,15 @@ class AISummarizer:
         """Summarize a single article"""
         try:
             prompt = f"""Please create a concise summary of the following article. 
-            Focus on the key points, main arguments, and important facts. 
-            Keep the summary informative but readable:
+            
+            IMPORTANT FORMATTING REQUIREMENTS:
+            - Write in clear, flowing paragraphs with natural line breaks
+            - Use simple, conversational language suitable for text-to-speech
+            - NO asterisks, bullet points, or special formatting characters
+            - NO article titles or source names in the summary
+            - NO hashtags, quotes, or markdown formatting
+            - Focus on the key information as if you're telling someone about it in conversation
+            - Use complete sentences and proper paragraph structure
 
             {text}"""
             
@@ -26,7 +33,12 @@ class AISummarizer:
                 contents=prompt
             )
             
-            return response.text if response.text else None
+            # Clean up the response to ensure it meets our formatting requirements
+            if response.text:
+                cleaned_text = self._clean_summary_text(response.text)
+                return cleaned_text
+            else:
+                return None
             
         except Exception as e:
             print(f"Error summarizing article: {str(e)}")
@@ -57,17 +69,24 @@ class AISummarizer:
             
             # Create a combined summary from individual summaries
             combined_text = ""
-            for i, summary_data in enumerate(individual_summaries, 1):
-                combined_text += f"\n\n{i}. {summary_data['title']} (Source: {summary_data['source']})\n"
-                combined_text += summary_data['summary']
+            for summary_data in individual_summaries:
+                combined_text += summary_data['summary'] + "\n\n"
             
             # Generate final combined summary
             final_prompt = f"""Please create a comprehensive but concise summary that combines the key information from these {len(individual_summaries)} articles. 
-            
-            Organize the content logically, identify common themes, and present the most important information in a clear, readable format. 
-            
-            If there are conflicting viewpoints, please mention them. Structure the summary with clear sections if appropriate:
 
+            CRITICAL FORMATTING REQUIREMENTS:
+            - Write in clear, flowing paragraphs suitable for text-to-speech conversion
+            - Use natural, conversational language as if explaining to a friend
+            - NO asterisks, bullet points, dashes, or special formatting characters
+            - NO article titles, source names, or references to "articles" or "reports"
+            - NO section headers, numbered lists, or markdown formatting
+            - NO quotes, hashtags, or technical jargon
+            - Present information as continuous, readable prose with proper paragraph breaks
+            - Organize content logically but without explicit section divisions
+            - If there are different viewpoints, weave them naturally into the narrative
+
+            Here is the content to summarize:
             {combined_text}"""
             
             response = self.client.models.generate_content(
@@ -75,7 +94,12 @@ class AISummarizer:
                 contents=final_prompt
             )
             
-            return response.text if response.text else None
+            # Clean up the response to ensure it meets our formatting requirements
+            if response.text:
+                cleaned_text = self._clean_summary_text(response.text)
+                return cleaned_text
+            else:
+                return None
             
         except Exception as e:
             print(f"Error creating combined summary: {str(e)}")
@@ -100,3 +124,70 @@ class AISummarizer:
         except Exception as e:
             print(f"Error summarizing with focus: {str(e)}")
             return None
+    
+    def _clean_summary_text(self, text: str) -> str:
+        """
+        Clean and sanitize summary text for optimal text-to-speech conversion
+        """
+        import re
+        
+        # Remove markdown formatting
+        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # Remove bold **text**
+        text = re.sub(r'\*([^*]+)\*', r'\1', text)      # Remove italic *text*
+        text = re.sub(r'`([^`]+)`', r'\1', text)        # Remove code `text`
+        
+        # Remove bullet points and list markers
+        text = re.sub(r'^\s*[-•*]\s+', '', text, flags=re.MULTILINE)
+        text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)
+        
+        # Remove section headers (lines that are all caps or end with colons)
+        text = re.sub(r'^\s*[A-Z\s]+:?\s*$', '', text, flags=re.MULTILINE)
+        
+        # Remove hashtags and social media references
+        text = re.sub(r'#\w+', '', text)
+        text = re.sub(r'@\w+', '', text)
+        
+        # Remove quotes and special characters
+        text = re.sub(r'["""''`]', '', text)
+        text = re.sub(r'[\[\]{}]', '', text)
+        
+        # Remove references to articles, reports, sources
+        text = re.sub(r'\b(according to|the article|the report|sources say|reports indicate)\b', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(article|report|source|study|research)\s+(states|shows|indicates|reveals|suggests)\b', '', text, flags=re.IGNORECASE)
+        
+        # Clean up multiple spaces and line breaks
+        text = re.sub(r'\s+', ' ', text)  # Multiple spaces to single space
+        text = re.sub(r'\n\s*\n', '\n\n', text)  # Clean up paragraph breaks
+        
+        # Remove extra whitespace
+        text = text.strip()
+        
+        # Ensure proper sentence structure
+        sentences = text.split('. ')
+        cleaned_sentences = []
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if sentence and len(sentence) > 10:  # Only keep substantial sentences
+                if not sentence.endswith('.'):
+                    sentence += '.'
+                cleaned_sentences.append(sentence)
+        
+        # Join sentences and create proper paragraphs
+        result = ' '.join(cleaned_sentences)
+        
+        # Add paragraph breaks for better readability (every 3-4 sentences)
+        sentences = result.split('. ')
+        paragraphs = []
+        current_paragraph = []
+        
+        for i, sentence in enumerate(sentences):
+            current_paragraph.append(sentence)
+            if (i + 1) % 4 == 0 or i == len(sentences) - 1:  # Every 4 sentences or last sentence
+                paragraph_text = '. '.join(current_paragraph)
+                if not paragraph_text.endswith('.') and paragraph_text:
+                    paragraph_text += '.'
+                paragraphs.append(paragraph_text)
+                current_paragraph = []
+        
+        return '\n\n'.join(paragraphs)

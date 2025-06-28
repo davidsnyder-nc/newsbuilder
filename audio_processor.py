@@ -1,30 +1,61 @@
 import os
 import io
-from google.cloud import texttospeech
-from pydub import AudioSegment
-from typing import Optional
 import tempfile
+import requests
+from typing import Optional
+from pydub import AudioSegment
+
+try:
+    from google.cloud import texttospeech
+    GOOGLE_TTS_AVAILABLE = True
+except ImportError:
+    GOOGLE_TTS_AVAILABLE = False
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 class AudioProcessor:
     def __init__(self):
-        # Initialize Google TTS client
-        # Note: This requires GOOGLE_APPLICATION_CREDENTIALS environment variable
-        # or proper authentication setup
-        try:
-            self.tts_client = texttospeech.TextToSpeechClient()
-            self.voice = texttospeech.VoiceSelectionParams(
-                language_code="en-US",
-                name="en-US-Neural2-J",  # A good quality neural voice
-                ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-            )
-            self.audio_config = texttospeech.AudioConfig(
-                audio_encoding=texttospeech.AudioEncoding.MP3,
-                speaking_rate=1.0,
-                pitch=0.0
-            )
-        except Exception as e:
-            print(f"Warning: Google TTS client initialization failed: {str(e)}")
-            self.tts_client = None
+        # Initialize TTS with fallback options
+        self.google_tts_client = None
+        self.openai_client = None
+        self.tts_method = None
+        
+        # Try OpenAI TTS first (more reliable in this environment)
+        if OPENAI_AVAILABLE:
+            try:
+                api_key = os.getenv("OPENAI_API_KEY")
+                if api_key:
+                    self.openai_client = OpenAI(api_key=api_key)
+                    self.tts_method = "openai"
+                    print("OpenAI TTS initialized successfully")
+            except Exception as e:
+                print(f"OpenAI TTS initialization failed: {str(e)}")
+        
+        # Fallback to Google Cloud TTS if OpenAI not available
+        if not self.tts_method and GOOGLE_TTS_AVAILABLE:
+            try:
+                self.google_tts_client = texttospeech.TextToSpeechClient()
+                self.voice = texttospeech.VoiceSelectionParams(
+                    language_code="en-US",
+                    name="en-US-Neural2-J",
+                    ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+                )
+                self.audio_config = texttospeech.AudioConfig(
+                    audio_encoding=texttospeech.AudioEncoding.MP3,
+                    speaking_rate=1.0,
+                    pitch=0.0
+                )
+                self.tts_method = "google"
+                print("Google Cloud TTS initialized successfully")
+            except Exception as e:
+                print(f"Google Cloud TTS initialization failed: {str(e)}")
+        
+        if not self.tts_method:
+            print("No TTS service available")
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """
