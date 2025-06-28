@@ -39,11 +39,11 @@ st.sidebar.markdown("---")
 
 # Navigation menu
 pages = {
-    f"{svg_icon_html('articles', 16)} Read Articles": "articles",
-    f"{svg_icon_html('feeds', 16)} RSS Feeds": "feeds", 
-    f"{svg_icon_html('bookmark', 16)} Bookmarks": "bookmarks",
-    f"{svg_icon_html('summary', 16)} Summary": "summary",
-    f"{svg_icon_html('settings', 16)} Settings": "settings"
+    "📖 Read Articles": "articles",
+    "📊 RSS Feeds": "feeds", 
+    "🔖 Bookmarks": "bookmarks",
+    "📄 Summary": "summary",
+    "⚙️ Settings": "settings"
 }
 
 # Use query params for navigation
@@ -67,7 +67,7 @@ st.sidebar.metric("RSS Feeds", feeds_count)
 st.sidebar.metric("Bookmarks", bookmarks_count)
 
 if feeds_count > 0:
-    if st.sidebar.button(f"{svg_icon_html('refresh', 16)} Refresh All Feeds", use_container_width=True):
+    if st.sidebar.button("🔄 Refresh All Feeds", use_container_width=True):
         with st.spinner("Refreshing feeds..."):
             rss_manager.refresh_all_feeds()
         st.success("Feeds refreshed!")
@@ -120,16 +120,16 @@ if current_page == "articles":
                             st.write(article['summary'][:200] + "..." if len(article['summary']) > 200 else article['summary'])
                         
                         if article['link']:
-                            st.link_button(f"{svg_icon_html('link', 16)} Read Full Article", article['link'])
+                            st.link_button("🔗 Read Full Article", article['link'])
                     
                     with col2:
                         is_bookmarked = bookmark_manager.is_bookmarked(article['link'])
                         
                         if is_bookmarked:
-                            if st.button(f"{svg_icon_html('bookmark_filled', 16)} Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
+                            if st.button("🔖 Bookmarked", key=f"bookmark_{article['link']}", disabled=True):
                                 pass
                         else:
-                            if st.button(f"{svg_icon_html('bookmark', 16)} Bookmark", key=f"bookmark_{article['link']}"):
+                            if st.button("📌 Bookmark", key=f"bookmark_{article['link']}"):
                                 if bookmark_manager.add_bookmark(article):
                                     st.success("Article bookmarked!")
                                     st.rerun()
@@ -190,7 +190,7 @@ elif current_page == "feeds":
                         st.caption("Never refreshed")
                 
                 with col4:
-                    if st.button(f"{svg_icon_html('delete', 16)}", key=f"delete_{feed['name']}", help="Delete feed"):
+                    if st.button("🗑️", key=f"delete_{feed['name']}", help="Delete feed"):
                         rss_manager.remove_feed(feed['name'])
                         st.success(f"Deleted feed: {feed['name']}")
                         st.rerun()
@@ -208,11 +208,11 @@ elif current_page == "bookmarks":
         # Actions section
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button(f"{svg_icon_html('summary', 16)} Generate Combined Summary", type="primary", use_container_width=True):
+            if st.button("📝 Generate Combined Summary", type="primary", use_container_width=True):
                 st.query_params["page"] = "summary"
                 st.rerun()
         with col2:
-            if st.button(f"{svg_icon_html('delete', 16)} Clear All Bookmarks", use_container_width=True):
+            if st.button("🗑️ Clear All Bookmarks", use_container_width=True):
                 bookmark_manager.clear_bookmarks()
                 st.success("All bookmarks cleared!")
                 st.rerun()
@@ -232,10 +232,10 @@ elif current_page == "bookmarks":
                         st.write(bookmark['summary'][:300] + "..." if len(bookmark['summary']) > 300 else bookmark['summary'])
                     
                     if bookmark['link']:
-                        st.link_button(f"{svg_icon_html('link', 16)} Read Full Article", bookmark['link'])
+                        st.link_button("🔗 Read Full Article", bookmark['link'])
                 
                 with col2:
-                    if st.button(f"{svg_icon_html('delete', 16)} Remove", key=f"remove_bookmark_{bookmark['link']}"):
+                    if st.button("🗑️ Remove", key=f"remove_bookmark_{bookmark['link']}"):
                         bookmark_manager.remove_bookmark(bookmark['link'])
                         st.success("Bookmark removed!")
                         st.rerun()
@@ -257,7 +257,7 @@ elif current_page == "summary":
             st.session_state.combined_summary = None
         
         # Generate summary button
-        if st.button(f"{svg_icon_html('ai', 16)} Generate AI Summary", type="primary"):
+        if st.button("🤖 Generate AI Summary", type="primary"):
             with st.spinner("Fetching full articles and generating summary..."):
                 try:
                     # Progress tracking
