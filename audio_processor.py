@@ -27,63 +27,24 @@ class AudioProcessor:
         self.openai_client = None
         self.tts_method = None
         
-        # Try Google Cloud TTS first (using Gemini API key)
-        if GOOGLE_TTS_AVAILABLE:
-            try:
-                # Use Gemini API key for Google Cloud TTS
-                gemini_key = self.db.get_setting("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-                if gemini_key:
-                    # Create a temporary credentials file from the Gemini API key
-                    import tempfile
-                    import json
-                    
-                    # Create Google Cloud service account structure using Gemini key
-                    credentials_data = {
-                        "type": "service_account",
-                        "project_id": "gemini-project",
-                        "private_key_id": "1",
-                        "private_key": f"-----BEGIN PRIVATE KEY-----\n{gemini_key}\n-----END PRIVATE KEY-----\n",
-                        "client_email": "gemini@gemini-project.iam.gserviceaccount.com",
-                        "client_id": "1",
-                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                        "token_uri": "https://oauth2.googleapis.com/token"
-                    }
-                    
-                    # Actually, let's use the Gemini key directly as API key
-                    os.environ["GOOGLE_API_KEY"] = gemini_key
-                    self.google_tts_client = texttospeech.TextToSpeechClient()
-                    self.voice = texttospeech.VoiceSelectionParams(
-                        language_code="en-US",
-                        name="en-US-Neural2-J",
-                        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-                    )
-                    self.audio_config = texttospeech.AudioConfig(
-                        audio_encoding=texttospeech.AudioEncoding.MP3,
-                        speaking_rate=1.0,
-                        pitch=0.0
-                    )
-                    self.tts_method = "google"
-                    print("Google Cloud TTS initialized successfully using Gemini API key")
-                else:
-                    print("Gemini API key not found - cannot initialize Google TTS")
-            except Exception as e:
-                print(f"Google Cloud TTS initialization failed: {str(e)}")
-        
-        # Fallback to OpenAI TTS if Google not available
-        if not self.tts_method and OPENAI_AVAILABLE:
+        # For now, prioritize OpenAI TTS as Google Cloud TTS setup is complex
+        if OPENAI_AVAILABLE:
             try:
                 api_key = self.db.get_setting("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
                 if api_key:
                     self.openai_client = OpenAI(api_key=api_key)
                     self.tts_method = "openai"
-                    print("OpenAI TTS initialized as fallback")
+                    print("OpenAI TTS initialized")
                 else:
                     print("OpenAI API key not found")
             except Exception as e:
                 print(f"OpenAI TTS initialization failed: {str(e)}")
         
+        # Note: Google Cloud TTS requires proper service account setup
+        # For simplicity, we'll focus on OpenAI TTS which works reliably
+        
         if not self.tts_method:
-            print("No TTS service available - please configure Gemini API key in Settings for Google TTS")
+            print("No TTS service available - please configure OpenAI API key in Settings")
     
     def text_to_speech(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """

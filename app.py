@@ -413,54 +413,72 @@ elif current_page == "summary":
                 help="Use Ctrl+A to select all, then Ctrl+C to copy"
             )
             
-            # Download as text
-            st.download_button(
-                label="📥 Download as Text",
-                data=st.session_state.combined_summary,
-                file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                mime="text/plain"
-            )
+            # Text options
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.download_button(
+                    label="📥 Download as Text",
+                    data=st.session_state.combined_summary,
+                    file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+            
+            with col2:
+                if st.button("📋 Copy to Clipboard", use_container_width=True):
+                    st.success("Use Ctrl+A and Ctrl+C in the text area above to copy!")
             
             # Audio generation section
             st.markdown(f'<h3>{svg_icon_html("audio", 24)} Audio Options</h3>', unsafe_allow_html=True)
             
-            col1, col2, col3 = st.columns(3)
+            # Initialize audio generation state
+            if 'audio_generating' not in st.session_state:
+                st.session_state.audio_generating = False
             
-            with col1:
+            # Audio generation button
+            if not st.session_state.audio_generating:
                 if st.button("🎵 Generate Audio", use_container_width=True):
-                    with st.spinner("Converting text to speech..."):
-                        try:
-                            audio_file = audio_processor.text_to_speech(st.session_state.combined_summary)
-                            if audio_file:
-                                st.session_state.audio_file = audio_file
-                                st.success("Audio generated!")
-                            else:
-                                st.error("Failed to generate audio - OpenAI API quota exceeded. Please check your OpenAI billing or configure Google Cloud TTS credentials.")
-                        except Exception as e:
-                            error_msg = str(e)
-                            if "quota" in error_msg.lower() or "429" in error_msg:
-                                st.error("Your OpenAI API key has exceeded its quota. Please check your billing at https://platform.openai.com/account/billing")
-                            else:
-                                st.error(f"Error generating audio: {error_msg}")
+                    st.session_state.audio_generating = True
+                    st.rerun()
             
-            with col2:
-                if 'audio_file' in st.session_state and st.session_state.audio_file:
-                    st.audio(st.session_state.audio_file, format='audio/mp3')
-            
-            with col3:
-                if 'audio_file' in st.session_state and st.session_state.audio_file:
+            # Show spinner and generate audio
+            if st.session_state.audio_generating:
+                with st.spinner("Converting text to speech..."):
                     try:
-                        with open(st.session_state.audio_file, 'rb') as f:
-                            audio_data = f.read()
-                        st.download_button(
-                            label="📥 Download MP3",
-                            data=audio_data,
-                            file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp3",
-                            mime="audio/mp3",
-                            use_container_width=True
-                        )
+                        audio_file = audio_processor.text_to_speech(st.session_state.combined_summary)
+                        if audio_file:
+                            st.session_state.audio_file = audio_file
+                            st.session_state.audio_generating = False
+                            st.success("Audio generated!")
+                            st.rerun()
+                        else:
+                            st.session_state.audio_generating = False
+                            st.error("Failed to generate audio - please check your OpenAI API key and quota.")
                     except Exception as e:
-                        st.error(f"Error preparing download: {str(e)}")
+                        st.session_state.audio_generating = False
+                        error_msg = str(e)
+                        if "quota" in error_msg.lower() or "429" in error_msg:
+                            st.error("Your OpenAI API key has exceeded its quota. Please check your billing.")
+                        else:
+                            st.error(f"Error generating audio: {error_msg}")
+            
+            # Audio playback and download (only show if audio exists)
+            if 'audio_file' in st.session_state and st.session_state.audio_file and not st.session_state.audio_generating:
+                st.audio(st.session_state.audio_file, format='audio/mp3')
+                
+                try:
+                    with open(st.session_state.audio_file, 'rb') as f:
+                        audio_data = f.read()
+                    st.download_button(
+                        label="📥 Download MP3",
+                        data=audio_data,
+                        file_name=f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp3",
+                        mime="audio/mp3",
+                        use_container_width=True
+                    )
+                except Exception as e:
+                    st.error(f"Error preparing download: {str(e)}")
 
 elif current_page == "settings":
     st.markdown(f'<h1>{svg_icon_html("settings", 32)} Settings</h1>', unsafe_allow_html=True)
