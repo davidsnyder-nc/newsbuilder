@@ -8,17 +8,9 @@ class AISummarizer:
         from database import DatabaseManager
         self.db = db_manager or DatabaseManager()
         
-        # Get preferred AI service from settings
-        self.ai_service = self.db.get_setting("ai_service", "gemini")
-        
-        # Initialize based on preferred service
+        # Use only Gemini for AI summarization
         self.gemini_client = None
-        self.openai_client = None
-        
-        if self.ai_service == "gemini":
-            self._init_gemini()
-        else:
-            self._init_openai()
+        self._init_gemini()
     
     def _init_gemini(self):
         """Initialize Gemini client"""
@@ -36,22 +28,7 @@ class AISummarizer:
         except Exception as e:
             print(f"Failed to initialize Gemini: {str(e)}")
     
-    def _init_openai(self):
-        """Initialize OpenAI client"""
-        try:
-            # Get API key from database first, then environment
-            api_key = self.db.get_setting("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
-            if api_key:
-                from openai import OpenAI
-                self.openai_client = OpenAI(api_key=api_key)
-                # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
-                # do not change this unless explicitly requested by the user
-                self.model = "gpt-4o"
-                print("OpenAI initialized for summarization")
-            else:
-                print("No OpenAI API key found")
-        except Exception as e:
-            print(f"Failed to initialize OpenAI: {str(e)}")
+
     
     def summarize_article(self, text: str) -> Optional[str]:
         """Summarize a single article"""
