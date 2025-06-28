@@ -514,16 +514,36 @@ elif current_page == "settings":
     st.markdown(f'<h3>{svg_icon_html("settings", 24)} Application Settings</h3>', unsafe_allow_html=True)
     
     with st.expander("🔊 Audio Settings", expanded=True):
-        # Google TTS Voice selection
+        # Google TTS Voice selection - Neural2 and Studio voices
         voice_options = [
-            ("en-US-Neural2-H", "Neural2-H (Female)"), 
-            ("en-US-Neural2-I", "Neural2-I (Male)"),
+            # Premium Studio voices (highest quality)
+            ("en-US-Studio-M", "Studio-M (Male) - Premium"),
+            ("en-US-Studio-O", "Studio-O (Female) - Premium"),
+            ("en-US-Studio-Q", "Studio-Q (Male) - Premium"),
+            
+            # Neural2 voices (high quality)
             ("en-US-Neural2-A", "Neural2-A (Female)"),
             ("en-US-Neural2-C", "Neural2-C (Female)"),
             ("en-US-Neural2-D", "Neural2-D (Male)"),
-            ("en-US-Neural2-F", "Neural2-F (Female)")
+            ("en-US-Neural2-F", "Neural2-F (Female)"),
+            ("en-US-Neural2-G", "Neural2-G (Female)"),
+            ("en-US-Neural2-H", "Neural2-H (Female)"),
+            ("en-US-Neural2-I", "Neural2-I (Male)"),
+            ("en-US-Neural2-J", "Neural2-J (Male)"),
+            
+            # Standard voices
+            ("en-US-Standard-A", "Standard-A (Female)"),
+            ("en-US-Standard-B", "Standard-B (Male)"),
+            ("en-US-Standard-C", "Standard-C (Female)"),
+            ("en-US-Standard-D", "Standard-D (Male)"),
+            ("en-US-Standard-E", "Standard-E (Female)"),
+            ("en-US-Standard-F", "Standard-F (Female)"),
+            ("en-US-Standard-G", "Standard-G (Female)"),
+            ("en-US-Standard-H", "Standard-H (Female)"),
+            ("en-US-Standard-I", "Standard-I (Male)"),
+            ("en-US-Standard-J", "Standard-J (Male)")
         ]
-        current_voice = db.get_setting("tts_voice", "en-US-Neural2-H")
+        current_voice = db.get_setting("tts_voice", "en-US-Studio-O")
         
         voice_labels = [label for _, label in voice_options]
         voice_values = [value for value, _ in voice_options]
@@ -534,7 +554,7 @@ elif current_page == "settings":
             "Google Text-to-Speech Voice",
             voice_labels,
             index=current_index,
-            help="Choose a Google Cloud TTS voice for audio generation"
+            help="Studio voices offer premium quality with natural expressions. Neural2 voices provide high-quality synthesis. Standard voices are reliable basic options."
         )
         
         selected_voice = voice_values[voice_labels.index(selected_voice_label)]

@@ -73,11 +73,17 @@ class AudioProcessor:
         """Synthesize a single chunk of text using Google TTS REST API"""
         try:
             # Get voice settings from database
-            voice_name = self.db.get_setting("tts_voice", "en-US-Neural2-H")
+            voice_name = self.db.get_setting("tts_voice", "en-US-Studio-O")
             speaking_rate = self.db.get_setting("speaking_rate", 1.0)
             
             # Determine gender based on voice name
-            if voice_name in ["en-US-Neural2-I", "en-US-Neural2-D"]:
+            male_voices = [
+                "en-US-Studio-M", "en-US-Studio-Q",
+                "en-US-Neural2-D", "en-US-Neural2-I", "en-US-Neural2-J",
+                "en-US-Standard-B", "en-US-Standard-D", "en-US-Standard-I", "en-US-Standard-J"
+            ]
+            
+            if voice_name in male_voices:
                 voice_gender = "MALE"
             else:
                 voice_gender = "FEMALE"
