@@ -14,24 +14,19 @@ curl -fsSL https://raw.githubusercontent.com/your-repo/rss-reader/main/quick-ins
 ./install.sh
 ```
 
-### 2. Set Up API Key
-```bash
-cd ~/rss-reader
-cp .env.example .env
-nano .env  # Add: GEMINI_API_KEY=your_key_here
-```
-
-### 3. Start Application
+### 2. Start Application
 ```bash
 ./start.sh                    # Default: http://localhost:5000
 ./start.sh --port 8080        # Custom port: http://localhost:8080
 ```
 
-## Getting Your Gemini API Key
+### 3. Configure API Key in Web Interface
 
-1. Visit [Google AI Studio](https://aistudio.google.com/)
-2. Click "Create API Key"
-3. Copy the key and add it to your `.env` file
+1. Open browser to `http://localhost:5000`
+2. Go to "Settings" page
+3. Expand "Configure API Keys" 
+4. Enter your Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+5. Click "Save API Key"
 
 ## Common Commands
 
@@ -61,6 +56,6 @@ tail -f logs/app.log
 
 - **Port busy**: Use `./start.sh --port 8080`
 - **Permission denied**: Run `chmod +x *.sh`
-- **No API key**: Check `.env` file has `GEMINI_API_KEY=your_key`
+- **No API key**: Configure in Settings page via web interface
 
 That's it! Your RSS reader is ready to use.
